@@ -25,29 +25,34 @@ environment; the apex zone here delegates to it over NS.
 
 ## Getting started
 
-The two operator entrypoints:
+Install [just](https://just.systems) and [pre-commit](https://pre-commit.com),
+then put the commit gate in place:
+
+```sh
+pre-commit install
+```
+
+Every check this repository enforces runs through pre-commit, so that one
+command is the whole local setup.
+
+Two recipes make up the operator surface:
 
 - `just bootstrap` — first-time setup and credential rotation. Provisions the
   Terraform state backend and the credentials later applies depend on.
 - `just org` — local `terraform apply` against the org layer, run after
   merging to `develop`.
 
-Neither is implemented yet. Each names its tracking issue when run.
+Neither is implemented yet. Each names its tracking issue when you run it.
 
 ## Layout
 
-| Path                   | Holds                                             |
-| ---------------------- | ------------------------------------------------- |
-| `terraform/bootstrap/` | State backend and credentials, applied by hand    |
-| `terraform/org/`       | Steady-state org config, applied after each merge |
-
-The two Terraform layers split on credentials and blast radius, not on
-provider: `bootstrap` runs rarely with elevated human credentials and produces
-what `org` consumes.
+Terraform splits into two layers on credentials and blast radius rather than
+on provider. `terraform/bootstrap/` runs rarely, with elevated human
+credentials, and provisions the state backend; `terraform/org/` holds the
+steady-state org configuration, consumes what bootstrap produced, and is
+applied after each merge.
 
 ## Contributing
-
-Checks run through pre-commit; every hook must pass.
 
 This is infrastructure maintained for the organization's own use. Issues and
 pull requests from outside collaborators are not actively solicited and may
