@@ -176,9 +176,8 @@ ensure_github_app_private_key() {
   echo "Shred ${path} once the infrastructure layer authenticates."
 }
 
-# The values only exist once the App is registered, which is a browser action.
-# A run before that legitimately leaves the secrets empty; re-running fills
-# them in.
+# The values only exist once the App is registered, which is a browser action,
+# so a run before that legitimately leaves the secrets empty.
 ensure_github_app_secrets() {
   ensure_github_app_identifier github-app-id \
     "App ID" "${GITHUB_APP_ID:-}"

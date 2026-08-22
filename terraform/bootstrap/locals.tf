@@ -7,11 +7,9 @@ locals {
   # never frees a project ID.
   project_id = "dungeon-studio-infrastructure"
 
-  # One bucket per layer, each named after the layer it serves. Only the
-  # second name says so: the first predates the rule and already holds live
-  # state, and renaming a bucket moves every object in it.
-  #
-  # Each layer's backend.tf repeats its own literal; backend blocks cannot
+  # One bucket per layer, each named after the layer it serves. Only the second
+  # name says so; renaming the first would move every object in it. Each
+  # layer's backend.tf repeats its own literal, because backend blocks cannot
   # interpolate.
   bootstrap_state_bucket      = "dungeon-studio-tfstate"
   infrastructure_state_bucket = "dungeon-studio-infrastructure-tfstate"

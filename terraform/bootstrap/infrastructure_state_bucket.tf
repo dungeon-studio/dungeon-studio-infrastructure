@@ -1,13 +1,13 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-# Terraform-managed, unlike the bootstrap bucket: this layer's state does not
-# live here, so there is no circularity for scripts/bootstrap.sh to break.
+# A resource, not a data source like the bootstrap bucket: this layer's state
+# does not live here, so nothing is circular.
 #
-# It is a second bucket rather than a second prefix because the deployer
-# grants are bucket-wide. GCS has no per-prefix ACL, so one bucket would put
-# the state that defines the deployers within reach of the credentials it
-# defines — read on every pull request, write on every merge.
+# A second bucket rather than a second prefix, because deployer grants are
+# bucket-wide and GCS has no per-prefix ACL. One shared bucket would put
+# bootstrap's state in reach of the deployers — read on every pull request,
+# write on every merge.
 resource "google_storage_bucket" "infrastructure_state" {
   project  = google_project.infrastructure.project_id
   name     = local.infrastructure_state_bucket
