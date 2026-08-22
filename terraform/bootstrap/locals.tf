@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT
 
 locals {
-  project_id = "dungeon-studio-org"
+  project_id = "dungeon-studio"
 
   # backend.tf repeats this literal; backend blocks cannot interpolate.
   state_bucket = "dungeon-studio-tfstate"

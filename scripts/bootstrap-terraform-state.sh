@@ -8,8 +8,8 @@
 
 set -euo pipefail
 
-PROJECT_ID="${PROJECT_ID:-dungeon-studio-org}"
-PROJECT_NAME="${PROJECT_NAME:-Dungeon Studio Org}"
+PROJECT_ID="${PROJECT_ID:-dungeon-studio}"
+PROJECT_NAME="${PROJECT_NAME:-Dungeon Studio}"
 BUCKET_NAME="${BUCKET_NAME:-dungeon-studio-tfstate}"
 LOCATION="${LOCATION:-europe-west2}"
 

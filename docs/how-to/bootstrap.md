@@ -6,7 +6,7 @@
 Stand up the Terraform state backend and the GCP identities continuous
 integration authenticates as. The run creates:
 
-- the `dungeon-studio-org` project and the `dungeon-studio-tfstate` bucket
+- the `dungeon-studio` project and the `dungeon-studio-tfstate` bucket
 - a Workload Identity Federation pool scoped to this repository
 - the read-only and read-write deployer service accounts
 
