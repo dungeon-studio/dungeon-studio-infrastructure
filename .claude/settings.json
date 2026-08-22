@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "pre-commit install >/dev/null",
+            "timeout": 30,
+            "statusMessage": "Installing pre-commit git hook"
+          }
+        ]
+      }
+    ]
+  }
+}
