@@ -15,14 +15,13 @@ permissions:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  # Cancel superseded pull request runs; never cancel a push to a long-lived
-  # branch, so every commit on it keeps a result of its own.
+  # Never cancel a push to a long-lived branch, so every commit on it keeps a
+  # result of its own.
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  # The only runner. A hook whose environment pre-commit builds itself needs
-  # nothing here — adding it to .pre-commit-config.yaml is enough. One that
-  # shells out to a binary also needs an install step below.
+  # Adding a hook to .pre-commit-config.yaml is usually all it takes. One that
+  # shells out to a binary the runner lacks also needs an install step below.
   pre-commit:
     name: Run pre-commit hooks
     runs-on: ubuntu-latest
@@ -42,9 +41,6 @@ jobs:
         with:
           persist-credentials: false
 
-      # terraform and trivy back terraform_fmt and terraform_trivy, which match
-      # no file until terraform/ lands. Installed ahead of it so the first
-      # commit of Terraform arrives already gated.
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
         with:
@@ -70,9 +66,8 @@ jobs:
       - name: Run hooks
         uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd # v3.0.1
         env:
-          # no-commit-to-branch guards local commits against develop and main,
-          # and a push-event checkout is attached to the very branch it guards,
-          # so it would fail every merge.
+          # A push-event checkout is attached to the very branch
+          # no-commit-to-branch guards, so the hook would fail every merge.
           SKIP: no-commit-to-branch
         with:
           extra_args: --all-files
