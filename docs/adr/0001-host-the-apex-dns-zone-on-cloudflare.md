@@ -10,15 +10,15 @@ Proposed
 ## Context
 
 The product monorepo carries draft privacy policy and terms of service
-pages, and the privacy page records that it needs a dedicated contact
-address before the 1.0.0 tag ([genshin.dungeon.studio#647][647]).
+pages ([genshin.dungeon.studio#647][647]). The privacy page records
+that it needs a dedicated contact address before the 1.0.0 tag.
 `privacy@dungeon.studio` is an apex-domain address, so whatever
 delivers it constrains the apex zone.
 
 The apex is already authoritative on Google Cloud DNS
-(`ns-cloud-d1..d4.googledomains.com`), DNSSEC-signed with a DS record
-published at `.studio`, answering with Squarespace A records, and
-delegating `genshin.dungeon.studio` by NS to a second Cloud DNS zone
+(`ns-cloud-d1..d4.googledomains.com`), and DNSSEC-signed with a DS
+record published at `.studio`. It answers with Squarespace A records.
+It delegates `genshin.dungeon.studio` by NS to a second Cloud DNS zone
 that the product monorepo's `core` environment owns. None of it is
 under Terraform here yet.
 
@@ -39,7 +39,7 @@ No option satisfies all four.
 cost, allowing 200 destination addresses per account and 200 routing
 rules per domain. The configuration is Terraform-managed through
 `cloudflare_email_routing_settings`, `_address`, `_rule`, and `_dns` in
-provider v5. It requires Cloudflare to be authoritative for the zone; a
+provider v5. It requires Cloudflare to be authoritative for the zone. A
 [partial CNAME setup][partial] does not serve it. Choosing it moves the
 apex off Cloud DNS.
 
@@ -51,12 +51,12 @@ exists to hide. Hiding it needs a paid plan. The free tier fails
 requirement 2; the paid tier fails requirement 4.
 
 **ImprovMX on Cloud DNS** keeps the destination out of DNS and the apex
-where it is, so no cutover is needed and the zone carries only MX and
-SPF records. Its Terraform provider is a community project [archived in
-February 2026][improvmx-tf], so requirement 1 holds only against a
-dependency that breaks when the API moves. ImprovMX is used nowhere
-else here, so requirement 3 counts it as a wholly new vendor rather
-than a second zone under an existing one.
+where it is. It needs no cutover, and the zone carries only MX and SPF
+records. Its Terraform provider is a community project [archived in
+February 2026][improvmx-tf], so requirement 1 holds only while an
+unmaintained project keeps working. Nothing else here uses ImprovMX, so
+requirement 3 counts it as a new vendor rather than a second zone under
+an existing one.
 
 Cloudflare is already a vendor here. The account
 `alunduil-infrastructure` runs `alunduil.com` on the free plan,
@@ -70,8 +70,8 @@ zone, and manage that zone and its Email Routing configuration from
 `terraform/org/` with the Cloudflare provider.
 
 `genshin.dungeon.studio` stays with the product monorepo. The apex zone
-carries the NS delegation as Cloudflare records; ownership of the
-subdomain is unchanged.
+carries the NS delegation as Cloudflare records. The monorepo keeps
+ownership of the subdomain.
 
 ## Consequences
 
@@ -83,9 +83,9 @@ It fails requirement 3. The org layer now spans two providers and two
 credentials, and a Cloudflare API token joins the GCP credentials that
 `just bootstrap` provisions and rotates. DNS problems gain a second
 place to look. The existing Cloudflare account absorbs part of that
-cost; the token, the provider version, and the split surface remain.
+cost. The token, the provider version, and the split surface remain.
 
-The cutover is a one-time risk against a live site. Moving authority
+The cutover is a one-time risk to a live site. Moving authority
 means disabling DNSSEC at the Squarespace registrar, repointing the
 nameservers, and re-enabling DNSSEC with Cloudflare's DS record. The
 zone is unsigned between those steps. Run them out of order and it

@@ -46,8 +46,8 @@ explanation documents under `docs/explanation/`, so the organization
 now has two shapes for the same kind of document. A reference that
 crosses repositories has to say which it points at.
 
-Recording a decision costs a document, so the practice decays if it is
-applied to tactical choices.
+Recording a decision costs a document, so the practice decays if it
+covers tactical choices.
 
 ## References
 
