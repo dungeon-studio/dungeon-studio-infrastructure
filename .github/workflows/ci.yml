@@ -1,7 +1,10 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 ---
-name: Pre-commit
+name: CI
+
+# Sensors that run unconditionally on an integration event. A check with a
+# narrower "when" — a schedule, or a path gate — earns its own file.
 
 on:
   pull_request:
