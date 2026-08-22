@@ -8,9 +8,9 @@
 # grants are bucket-wide. GCS has no per-prefix ACL, so one bucket would put
 # the state that defines the deployers within reach of the credentials it
 # defines — read on every pull request, write on every merge.
-resource "google_storage_bucket" "org_state" {
+resource "google_storage_bucket" "infrastructure_state" {
   project  = google_project.infrastructure.project_id
-  name     = local.org_state_bucket
+  name     = local.infrastructure_state_bucket
   location = local.region
 
   uniform_bucket_level_access = true

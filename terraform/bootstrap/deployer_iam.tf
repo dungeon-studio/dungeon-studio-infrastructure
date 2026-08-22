@@ -43,7 +43,7 @@ resource "google_secret_manager_secret_iam_member" "deployer_github_app_secrets"
 resource "google_storage_bucket_iam_member" "deployer_state_objects" {
   for_each = local.deployers
 
-  bucket = google_storage_bucket.org_state.name
+  bucket = google_storage_bucket.infrastructure_state.name
   role   = each.value.state_bucket_role
   member = "serviceAccount:${each.value.email}"
 }
@@ -51,7 +51,7 @@ resource "google_storage_bucket_iam_member" "deployer_state_objects" {
 resource "google_storage_bucket_iam_member" "deployer_state_bucket_reader" {
   for_each = local.deployers
 
-  bucket = google_storage_bucket.org_state.name
+  bucket = google_storage_bucket.infrastructure_state.name
   role   = "roles/storage.legacyBucketReader"
   member = "serviceAccount:${each.value.email}"
 }

@@ -173,7 +173,7 @@ ensure_github_app_private_key() {
     die "${path} is not a PEM private key"
 
   add_secret_version "${secret}" <"${path}"
-  echo "Shred ${path} once terraform/org/ authenticates."
+  echo "Shred ${path} once the infrastructure layer authenticates."
 }
 
 # The values only exist once the App is registered, which is a browser action.

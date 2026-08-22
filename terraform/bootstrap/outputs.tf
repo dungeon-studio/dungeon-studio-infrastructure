@@ -14,7 +14,7 @@ output "project_number" {
 }
 
 output "state_bucket" {
-  value       = data.google_storage_bucket.state.name
+  value       = data.google_storage_bucket.bootstrap_state.name
   description = "GCS bucket holding this layer's Terraform state"
   sensitive   = false
 }

@@ -2,15 +2,16 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 #
-# Post-merge apply for the org layer. The github provider authenticates as a
-# GitHub App whose credentials terraform/bootstrap/ keeps in Secret Manager.
+# Post-merge apply for the infrastructure layer. The github provider
+# authenticates as a GitHub App whose credentials terraform/bootstrap/ keeps
+# in Secret Manager.
 # Reading them into the environment keeps the private key off disk and out of
 # Terraform state.
 
 set -euo pipefail
 
 PROJECT_ID="${PROJECT_ID:-dungeon-studio-infrastructure}"
-LAYER="terraform/org"
+LAYER="terraform/infrastructure"
 
 die() {
   echo "error: $*" >&2
@@ -37,7 +38,7 @@ export_github_app_credentials() {
   export GITHUB_APP_ID GITHUB_APP_INSTALLATION_ID GITHUB_APP_PEM_FILE
 }
 
-apply_org_layer() {
+apply_infrastructure_layer() {
   terraform -chdir="${LAYER}" init
   terraform -chdir="${LAYER}" apply
 }
@@ -47,7 +48,7 @@ main() {
 
   check_preconditions
   export_github_app_credentials
-  apply_org_layer
+  apply_infrastructure_layer
 }
 
 main "$@"

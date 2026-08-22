@@ -7,13 +7,14 @@ locals {
   # never frees a project ID.
   project_id = "dungeon-studio-infrastructure"
 
-  # backend.tf repeats this literal; backend blocks cannot interpolate.
-  state_bucket = "dungeon-studio-tfstate"
-
-  # terraform/org/backend.tf repeats this one for the same reason. Only this
-  # bucket names its layer: the other already holds live state, and renaming
-  # a bucket moves every object in it.
-  org_state_bucket = "dungeon-studio-org-tfstate"
+  # One bucket per layer, each named after the layer it serves. Only the
+  # second name says so: the first predates the rule and already holds live
+  # state, and renaming a bucket moves every object in it.
+  #
+  # Each layer's backend.tf repeats its own literal; backend blocks cannot
+  # interpolate.
+  bootstrap_state_bucket      = "dungeon-studio-tfstate"
+  infrastructure_state_bucket = "dungeon-studio-infrastructure-tfstate"
 
   github_repository = "dungeon-studio/dungeon-studio-infrastructure"
 
@@ -23,7 +24,7 @@ locals {
 
   # The App ID and installation ID are not secret. They live here because none
   # of the three exists until the App is registered, which leaves
-  # terraform/org/ nothing to hardcode.
+  # terraform/infrastructure/ nothing to hardcode.
   github_app_secrets = toset([
     "github-app-id",
     "github-app-installation-id",

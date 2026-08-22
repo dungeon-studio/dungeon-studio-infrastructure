@@ -40,26 +40,27 @@ Two recipes make up the operator surface:
 - `just bootstrap` — creates the `dungeon-studio-infrastructure` project, the
   `dungeon-studio-tfstate` state bucket, the Workload Identity Federation pool,
   and the deployer service accounts, then prompts for the GitHub App
-  credentials the org layer authenticates with. Run it once per machine, or to
-  rotate the deployer credentials.
-- `just org` — local `terraform apply` against the org layer, run after
-  merging to `develop`. It reads the GitHub App credentials out of Secret
-  Manager, so register the App before the first run.
+  credentials the infrastructure layer authenticates with. Run it once per
+  machine, or to rotate the deployer credentials.
+- `just infrastructure` — local `terraform apply` against the infrastructure
+  layer, run after merging to `develop`. It reads the GitHub App credentials
+  out of Secret Manager, so register the App before the first run.
 
 ## Layout
 
 Terraform splits into two layers on credentials and blast radius rather than
 on provider. `terraform/bootstrap/` runs rarely, with elevated human
-credentials, and provisions the state backend; `terraform/org/` holds the
-steady-state org configuration, consumes what bootstrap produced, and is
-applied after each merge.
+credentials, and provisions the state backend; `terraform/infrastructure/`
+holds the steady-state org configuration, consumes what bootstrap produced,
+and is applied after each merge.
 
 Each layer stores state in its own bucket: `dungeon-studio-tfstate` for
-bootstrap, `dungeon-studio-org-tfstate` for org. The deployer service accounts
-are granted on the org bucket alone, and a bucket is the smallest thing those
-grants can name — so continuous integration cannot read or rewrite the state
-that defines its own credentials. `genshin.dungeon.studio` keeps a separate
-bucket in its own project on the same reasoning.
+bootstrap, `dungeon-studio-infrastructure-tfstate` for the infrastructure
+layer. The deployer service accounts are granted on the second bucket alone,
+and a bucket is the smallest thing those grants can name — so continuous
+integration cannot read or rewrite the state that defines its own
+credentials. `genshin.dungeon.studio` keeps a separate bucket in its own
+project on the same reasoning.
 
 ## Run the first-time bootstrap
 
@@ -89,8 +90,8 @@ with.
 
 ## Register the GitHub App
 
-The org layer's `github` provider authenticates as a GitHub App, so its
-permissions are visible in the org's settings and its key rotates without
+The infrastructure layer's `github` provider authenticates as a GitHub App, so
+its permissions are visible in the org's settings and its key rotates without
 touching anyone's account. Terraform creates the Secret Manager secrets that
 hold the App's ID, installation ID, and private key but leaves them empty;
 `just bootstrap` prompts for the values, so the key material never reaches a

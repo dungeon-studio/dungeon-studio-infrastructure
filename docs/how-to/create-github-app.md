@@ -3,9 +3,9 @@
 
 # Create the GitHub App
 
-The `github` provider in `terraform/org/` authenticates as a GitHub App
-installed on the `dungeon-studio` org. This registers that App and stores its
-credentials where `just org` reads them.
+The `github` provider in `terraform/infrastructure/` authenticates as a GitHub
+App installed on the `dungeon-studio` org. This registers that App and stores
+its credentials where `just infrastructure` reads them.
 
 You need an owner role in the org and permission to add secret versions in
 the `dungeon-studio-infrastructure` project.
@@ -33,7 +33,7 @@ the `dungeon-studio-infrastructure` project.
      membership.
 
    GitHub adds **Repository → Metadata**, read-only, on its own. Leave it.
-   Extend the set when a resource in `terraform/org/` fails without it.
+   Extend the set when a resource in `terraform/infrastructure/` fails without it.
 
 5. Under **Where can this GitHub App be installed?** choose **Only on this
    account**.
@@ -76,7 +76,7 @@ shred --remove ~/Downloads/dungeon-studio-terraform.*.private-key.pem
 ## Confirm the provider authenticates
 
 ```sh
-just org
+just infrastructure
 ```
 
 The apply prints `github_organization_id`.

@@ -10,7 +10,7 @@ resource "google_service_account" "github_deployer_ro" {
   depends_on = [google_project_service.iam]
 }
 
-# Extend only when a resource in terraform/org/ fails to refresh without it.
+# Extend only when a resource in terraform/infrastructure/ fails to refresh without it.
 resource "google_project_iam_custom_role" "github_deployer_ro_planner" {
   project     = google_project.infrastructure.project_id
   role_id     = "githubDeployerPlanner"

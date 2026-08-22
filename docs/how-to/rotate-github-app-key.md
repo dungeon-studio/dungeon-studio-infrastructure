@@ -3,8 +3,8 @@
 
 # Rotate the GitHub App's private key
 
-This replaces the private key the `github` provider in `terraform/org/` signs
-with, on an App that already authenticates.
+This replaces the private key the `github` provider in
+`terraform/infrastructure/` signs with, on an App that already authenticates.
 
 You need admin on the App and permission to add and destroy secret versions
 in the `dungeon-studio-infrastructure` project.
@@ -24,7 +24,7 @@ through `gcloud`.
      --data-file ~/Downloads/<new-key>.private-key.pem
    ```
 
-3. Run `just org`. A successful apply is the new key working.
+3. Run `just infrastructure`. A successful apply is the new key working.
 
 4. Delete the old key on the App's General tab.
 

@@ -5,6 +5,6 @@
 bootstrap:
     scripts/bootstrap.sh
 
-[doc("Local post-merge apply for the org layer (GCP baseline, DNS, GitHub).")]
-org:
-    scripts/org.sh
+[doc("Local post-merge apply for the infrastructure layer (GCP, DNS, GitHub).")]
+infrastructure:
+    scripts/infrastructure.sh
