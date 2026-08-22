@@ -29,11 +29,9 @@ Maintainer notes (HTML comments are stripped from Claude's context):
 Two Terraform layers, split on credentials and blast radius rather
 than provider — see README §Layout for which holds what.
 
-Product infrastructure stays with its product. The apex
-`dungeon.studio` zone lives here; `genshin.dungeon.studio` owns its
-own zone in the monorepo's `core` environment and is reached by NS
-delegation. Check that boundary before adding a product-scoped
-resource here.
+Product infrastructure stays with its product — README §Scope draws
+the `genshin.dungeon.studio` boundary. Check it before adding a
+product-scoped resource here.
 
 ## Scope discipline
 

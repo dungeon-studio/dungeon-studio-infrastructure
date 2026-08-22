@@ -1,17 +1,16 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-# Stubs until the layers they drive exist. Each names the issue that fills it
-# in so `just <recipe>` points at the work rather than failing opaquely.
+issues_url := "https://github.com/dungeon-studio/dungeon-studio-infrastructure/issues"
 
-issues := "https://github.com/dungeon-studio/dungeon-studio-infrastructure/issues"
+# Fails naming the issue that fills the recipe in, so `just <recipe>` points at
+# the work rather than at a missing directory.
+_unimplemented layer issue:
+    @echo "Not implemented — {{ layer }} lands in {{ issues_url }}/{{ issue }}"
+    @exit 1
 
 [doc("Manual surface: state backend, bootstrap layer, CI credentials.")]
-bootstrap:
-    @echo "Not implemented — terraform/bootstrap/ lands in {{ issues }}/2"
-    @exit 1
+bootstrap: (_unimplemented "terraform/bootstrap/" "2")
 
 [doc("Local post-merge apply for the org layer (GCP baseline, DNS, GitHub).")]
-org:
-    @echo "Not implemented — terraform/org/ lands in {{ issues }}/5"
-    @exit 1
+org: (_unimplemented "terraform/org/" "5")
