@@ -10,10 +10,10 @@ Proposed
 ## Context
 
 Decisions here outlive the pull requests that make them, and nothing
-in the repository records why they went the way they did. Terraform
-shows the configuration a decision produced, git shows when it changed
-and who changed it, and the issue tracker shows what was asked for.
-None of them records the alternatives, or what the chosen option cost.
+in the repository records why they went the way they did. The code
+shows what a decision produced, git shows when it changed and who
+changed it, and the issue tracker shows what was asked for. None of
+them records the alternatives, or what the chosen option cost.
 
 A reader without that cannot tell a weighed decision from a default.
 Settled questions get reopened, and deliberate trade-offs get undone by
