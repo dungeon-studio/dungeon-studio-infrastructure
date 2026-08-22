@@ -24,7 +24,7 @@ monorepo's own and does not extend to a second repository.
 
 We will record architecturally significant decisions as Architecture
 Decision Records under `docs/adr/`, in the format Michael Nygard
-describes: status, context, decision, consequences.
+describes.
 
 Each record is `NNNN-kebab-title.md`, numbered from this one and never
 renumbered. A record is immutable once accepted. Changing a decision

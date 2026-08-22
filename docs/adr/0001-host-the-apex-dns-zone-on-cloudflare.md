@@ -21,7 +21,7 @@ delegating `genshin.dungeon.studio` by NS to a second Cloud DNS zone
 that the product monorepo's `core` environment owns. None of it is
 under Terraform here yet.
 
-Four requirements decide the choice:
+Four requirements:
 
 1. Every piece of configuration lives in Terraform.
 2. The forwarding destination stays out of public DNS. An address that
@@ -86,8 +86,7 @@ means disabling DNSSEC at the Squarespace registrar, repointing the
 nameservers, and re-enabling DNSSEC with Cloudflare's DS record. The
 zone is unsigned between those steps. Run them out of order and it
 becomes unresolvable. The Squarespace A records, the `www` CNAME, and
-the
-`genshin` NS delegation all have to exist in Cloudflare, unproxied,
+the `genshin` NS delegation all have to exist in Cloudflare, unproxied,
 before the nameservers change.
 
 Cloudflare's proxy, WAF, and redirect rules become reachable at the
@@ -105,7 +104,7 @@ neither fixes nor worsens this.
   requirement.
 - [Cloudflare Email Routing: limits][limits] — destination and rule
   counts.
-- [genshin.dungeon.studio#647][647] — the address this serves.
+- [genshin.dungeon.studio#647][647] — where the address is needed.
 
 [647]: https://github.com/dungeon-studio/genshin.dungeon.studio/issues/647
 [enable]: https://developers.cloudflare.com/email-routing/get-started/enable-email-routing/
