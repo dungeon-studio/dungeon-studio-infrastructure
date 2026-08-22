@@ -10,12 +10,11 @@ Proposed
 ## Context
 
 This repository holds org-level infrastructure that no single product
-owns, and its choices outlive the pull requests that make them. Which
-DNS provider is authoritative, which credentials a layer runs with, and
-where a boundary between this repository and a product falls are all
-things a later reader has to reconstruct before changing anything.
-`terraform apply` runs out-of-band after merge, so a reader who
-reconstructs wrong ships the mistake.
+owns, and its choices outlive the pull requests that make them. Before
+changing anything, a later reader has to reconstruct which DNS provider
+is authoritative, which credentials a layer runs with, and where the
+boundary with a product falls. `terraform apply` runs out-of-band after
+merge, so a reader who reconstructs wrong ships the mistake.
 
 The product monorepo records this class of decision as numbered
 explanation documents under `docs/explanation/`. That numbering is the

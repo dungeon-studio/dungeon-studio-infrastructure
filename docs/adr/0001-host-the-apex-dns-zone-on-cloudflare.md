@@ -19,8 +19,7 @@ The apex is already authoritative on Google Cloud DNS
 published at `.studio`, answering with Squarespace A records, and
 delegating `genshin.dungeon.studio` by NS to a second Cloud DNS zone
 that the product monorepo's `core` environment owns. None of it is
-under Terraform here yet. Issue #5 planned to bring the apex in as a
-`google_dns_managed_zone`.
+under Terraform here yet.
 
 Four requirements decide the choice:
 
@@ -33,7 +32,7 @@ Four requirements decide the choice:
 4. Recurring cost stays at zero. One forwarding address does not
    justify a subscription.
 
-Three ways to deliver the address meet those requirements differently.
+No option satisfies all four.
 
 **Cloudflare Email Routing** forwards to a verified destination at no
 cost, allowing 200 destination addresses per account and 200 routing
@@ -47,18 +46,18 @@ apex off Cloud DNS.
 apex stays where it is and the records are ordinary
 `google_dns_record_set` resources. On the free tier the forwarding rule
 *is* a public TXT record, so `privacy@` would publish the address it
-exists to hide. Keeping it private costs a subscription. This fails
-requirement 2, or requirement 4.
+exists to hide. Hiding it needs a paid plan. The free tier fails
+requirement 2; the paid tier fails requirement 4.
 
 **ImprovMX on Cloud DNS** keeps the destination private and the apex on
 Cloud DNS, but the alias map lives in ImprovMX's dashboard and has no
 Terraform provider, so the mail configuration leaves version control.
 This fails requirement 1.
 
-Cloudflare is already a vendor here: the account
-`alunduil-infrastructure` runs `alunduil.com`, migrated off these same
-Cloud DNS nameservers. The relationship, the plan, and the operator's
-familiarity already exist. The zone and a token scoped to it do not.
+Cloudflare is already a vendor here. The account
+`alunduil-infrastructure` runs `alunduil.com` on the free plan,
+migrated off these same Cloud DNS nameservers. Adding the apex costs a
+zone and a token scoped to it, not a new vendor relationship.
 
 ## Decision
 
@@ -69,9 +68,6 @@ zone, and manage that zone and its Email Routing configuration from
 `genshin.dungeon.studio` stays with the product monorepo. The apex zone
 carries the NS delegation as Cloudflare records; ownership of the
 subdomain is unchanged.
-
-Issue #5 narrows to the GCP org and billing baseline. The apex zone it
-scoped moves to this record.
 
 ## Consequences
 
@@ -88,8 +84,9 @@ cost; the token, the provider version, and the split surface remain.
 The cutover is a one-time risk against a live site. Moving authority
 means disabling DNSSEC at the Squarespace registrar, repointing the
 nameservers, and re-enabling DNSSEC with Cloudflare's DS record. The
-zone is unsigned between those steps, and out of order they leave it
-unresolvable. The Squarespace A records, the `www` CNAME, and the
+zone is unsigned between those steps. Run them out of order and it
+becomes unresolvable. The Squarespace A records, the `www` CNAME, and
+the
 `genshin` NS delegation all have to exist in Cloudflare, unproxied,
 before the nameservers change.
 
@@ -97,10 +94,10 @@ Cloudflare's proxy, WAF, and redirect rules become reachable at the
 apex. Nothing here needs them, and enabling them later is its own
 decision.
 
-The `genshin.dungeon.studio` delegation stays insecure. That zone sets
-`dnssec_config { state = "on" }`, but the apex publishes no DS record
-for it, so the chain of trust already breaks at the delegation. Moving
-the apex neither fixes nor worsens this; it wants its own issue.
+The `genshin.dungeon.studio` delegation stays insecure. The monorepo
+signs that zone, but the apex publishes no DS record for it, so the
+chain of trust already breaks at the delegation. Moving the apex
+neither fixes nor worsens this.
 
 ## References
 
