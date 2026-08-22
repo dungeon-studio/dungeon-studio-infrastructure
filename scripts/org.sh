@@ -3,9 +3,9 @@
 # SPDX-License-Identifier: MIT
 #
 # Post-merge apply for the org layer. The github provider authenticates as a
-# GitHub App whose credentials terraform/bootstrap/ keeps in Secret Manager;
-# this reads them into the environment the provider expects, so the private
-# key never lands on disk or in Terraform state.
+# GitHub App whose credentials terraform/bootstrap/ keeps in Secret Manager.
+# Reading them into the environment keeps the private key off disk and out of
+# Terraform state.
 
 set -euo pipefail
 
@@ -22,9 +22,8 @@ check_preconditions() {
   command -v terraform >/dev/null || die "terraform not found in PATH"
 }
 
-# A secret with no versions fails here, and set -e turns that into an exit
-# before terraform runs. Without it the provider would fall back to a personal
-# token and apply as whoever ran it.
+# die runs inside the caller's command substitution, so its exit leaves only
+# that subshell; set -e is what stops the script before terraform runs.
 read_secret() {
   gcloud secrets versions access latest --secret "$1" --project "${PROJECT_ID}" ||
     die "cannot read secret $1 — see docs/how-to/create-github-app.md"

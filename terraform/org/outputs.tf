@@ -3,6 +3,6 @@
 
 output "github_organization_id" {
   value       = data.github_organization.org.id
-  description = "GitHub's numeric ID for the org; reading it at all is what proves the App authenticated"
+  description = "GitHub's numeric ID for the org, read back as proof the App authenticated"
   sensitive   = false
 }

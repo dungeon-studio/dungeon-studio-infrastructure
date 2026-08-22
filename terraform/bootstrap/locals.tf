@@ -12,14 +12,13 @@ locals {
 
   github_repository = "dungeon-studio/dungeon-studio-infrastructure"
 
-  # The provider default and the secret replicas both take this.
-  # scripts/bootstrap.sh repeats it as LOCATION, which no expression can reach.
+  # scripts/bootstrap.sh repeats this literal as LOCATION; shell cannot read a
+  # Terraform local.
   region = "europe-west2"
 
-  # The App ID and installation ID are not secret. They live here anyway:
-  # none of the three exists until someone registers the App, so keeping them
-  # together gives terraform/org/ nothing to hardcode and the how-to one
-  # procedure to describe.
+  # The App ID and installation ID are not secret. They live here because none
+  # of the three exists until the App is registered, which leaves
+  # terraform/org/ nothing to hardcode.
   github_app_secrets = toset([
     "github-app-id",
     "github-app-installation-id",

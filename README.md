@@ -85,11 +85,11 @@ with.
 
 ## Register the GitHub App
 
-The org layer's `github` provider authenticates as a GitHub App rather than as
-a person, so its permissions are visible in the org's settings and its key
-rotates without touching anyone's account. Bootstrap creates the Secret Manager
-secrets that hold the App's ID, installation ID, and private key, but leaves
-them empty — Terraform never sees the key material.
+The org layer's `github` provider authenticates as a GitHub App, so its
+permissions are visible in the org's settings and its key rotates without
+touching anyone's account. Bootstrap creates the Secret Manager secrets that
+hold the App's ID, installation ID, and private key, but leaves them empty —
+Terraform never sees the key material.
 
 [docs/how-to/create-github-app.md](docs/how-to/create-github-app.md) covers
 registering the App, filling those secrets, and rotating the key.

@@ -4,9 +4,9 @@
 # Create the GitHub App
 
 The `github` provider in `terraform/org/` authenticates as a GitHub App
-installed on the `dungeon-studio` org, not as a person. This covers
-registering that App, filling the Secret Manager secrets `just org` reads,
-and rotating the private key later on.
+installed on the `dungeon-studio` org. This covers registering that App,
+filling the Secret Manager secrets `just org` reads, and rotating the private
+key.
 
 Run `just bootstrap` first — it creates the three secrets this fills, empty.
 You also need an owner role in the org and permission to add secret versions
@@ -22,7 +22,7 @@ in the `dungeon-studio-infrastructure` project.
    <https://github.com/dungeon-studio/dungeon-studio-infrastructure>.
 
 3. Clear **Webhook → Active**. Terraform calls the API and never receives
-   events, so a webhook URL would be one more endpoint to keep alive.
+   events.
 
 4. Grant these permissions and no others:
 
@@ -35,8 +35,7 @@ in the `dungeon-studio-infrastructure` project.
      membership.
 
    GitHub adds **Repository → Metadata**, read-only, on its own. Leave it.
-   Extend the set when a resource in `terraform/org/` fails without it,
-   rather than granting ahead of need.
+   Extend the set when a resource in `terraform/org/` fails without it.
 
 5. Under **Where can this GitHub App be installed?** choose **Only on this
    account**.
@@ -45,8 +44,7 @@ in the `dungeon-studio-infrastructure` project.
    General tab.
 
 7. Under **Private keys**, select **Generate a private key**. GitHub hands
-   over the `.pem` once and keeps only its fingerprint, so a lost key means
-   generating another rather than recovering this one.
+   over the `.pem` once and keeps only its fingerprint.
 
 ## Install the App on the org
 
@@ -79,7 +77,7 @@ gcloud secrets versions add github-app-private-key \
   --data-file ~/Downloads/dungeon-studio-terraform.*.private-key.pem
 ```
 
-Then destroy the downloaded key, which no longer has a reader:
+Then destroy the downloaded key:
 
 ```sh
 shred --remove ~/Downloads/dungeon-studio-terraform.*.private-key.pem
@@ -91,14 +89,13 @@ shred --remove ~/Downloads/dungeon-studio-terraform.*.private-key.pem
 just org
 ```
 
-The apply prints `github_organization_id`. Reaching that output means the
-App minted an installation token and GitHub accepted it. A wrong ID, a
-mismatched key, and a missing installation each fail before it.
+The apply prints `github_organization_id`. Reaching it means the App minted
+an installation token and GitHub accepted it.
 
 ## Rotate the private key
 
-An App holds two private keys at once, so the replacement starts working
-before the old key goes away and no run needs timing around the change.
+An App holds two private keys at once, so the replacement works before the
+old key goes away.
 
 1. Generate a second private key under **Private keys** on the App's
    General tab.
@@ -111,8 +108,8 @@ before the old key goes away and no run needs timing around the change.
      --data-file ~/Downloads/<new-key>.private-key.pem
    ```
 
-3. Run `just org`. It reads the latest version, so an apply that succeeds
-   is the new key working.
+3. Run `just org`. It reads the latest version, so a successful apply is the
+   new key working.
 
 4. Delete the old key on the App's General tab.
 
