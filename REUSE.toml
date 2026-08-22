@@ -18,7 +18,7 @@ SPDX-License-Identifier = "MIT"
 # Left behind by Claude Code sessions. These stay untracked, but nothing
 # gitignores them, and reuse lint walks any path git does not ignore.
 [[annotations]]
-path = [".claude/**", ".claustre_session_id"]
+path = [".claude/**"]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2026 Alex Brandt <alunduil@gmail.com>"
 SPDX-License-Identifier = "MIT"
