@@ -18,6 +18,23 @@ locals {
   }
 }
 
+# Plan authenticates the github provider as well as apply, so read access to
+# the App's credentials is not the applier's alone.
+resource "google_secret_manager_secret_iam_member" "deployer_github_app" {
+  for_each = {
+    for pair in setproduct(keys(local.deployers), local.github_app_secrets) :
+    "${pair[0]}-${pair[1]}" => {
+      email     = local.deployers[pair[0]].email
+      secret_id = pair[1]
+    }
+  }
+
+  project   = google_project.org.project_id
+  secret_id = google_secret_manager_secret.github_app[each.value.secret_id].secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${each.value.email}"
+}
+
 resource "google_storage_bucket_iam_member" "deployer_state_objects" {
   for_each = local.deployers
 
