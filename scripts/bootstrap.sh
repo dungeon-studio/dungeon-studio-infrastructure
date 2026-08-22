@@ -110,6 +110,83 @@ apply_bootstrap_layer() {
   terraform -chdir="${LAYER}" apply
 }
 
+secret_is_populated() {
+  local state
+  state="$(gcloud secrets versions describe latest --secret "$1" \
+    --project "${PROJECT_ID}" --format='value(state)' 2>/dev/null || true)"
+
+  [[ "${state}" == "ENABLED" ]]
+}
+
+add_secret_version() {
+  gcloud secrets versions add "$1" --project "${PROJECT_ID}" --data-file=-
+}
+
+ensure_github_app_identifier() {
+  local secret="$1" label="$2" value="$3"
+
+  if secret_is_populated "${secret}"; then
+    echo "${secret} already set."
+    return
+  fi
+
+  if [[ -z "${value}" && -t 0 ]]; then
+    read -rp "${label} (Enter to skip): " value
+  fi
+
+  if [[ -z "${value}" ]]; then
+    echo "Leaving ${secret} empty; see docs/how-to/create-github-app.md"
+    return
+  fi
+
+  [[ "${value}" =~ ^[0-9]+$ ]] || die "${label} must be digits, got '${value}'"
+
+  printf '%s' "${value}" | add_secret_version "${secret}"
+}
+
+ensure_github_app_private_key() {
+  local secret="$1"
+  local path="${GITHUB_APP_PRIVATE_KEY_PATH:-}"
+
+  if secret_is_populated "${secret}"; then
+    echo "${secret} already set."
+    return
+  fi
+
+  if [[ -z "${path}" && -t 0 ]]; then
+    read -rp "Path to the App's private key .pem (Enter to skip): " path
+  fi
+
+  if [[ -z "${path}" ]]; then
+    echo "Leaving ${secret} empty; see docs/how-to/create-github-app.md"
+    return
+  fi
+
+  # read hands back the tilde the shell would have expanded.
+  path="${path/#\~/${HOME}}"
+
+  [[ -r "${path}" ]] || die "cannot read ${path}"
+
+  # Signing with the wrong bytes surfaces inside the provider as an opaque
+  # JWT error, a long way from the paste that caused it.
+  grep -q -- '-----BEGIN .*PRIVATE KEY-----' "${path}" ||
+    die "${path} is not a PEM private key"
+
+  add_secret_version "${secret}" <"${path}"
+  echo "Shred ${path} once terraform/org/ authenticates."
+}
+
+# The values only exist once the App is registered, which is a browser action.
+# A run before that legitimately leaves the secrets empty; re-running fills
+# them in.
+ensure_github_app_secrets() {
+  ensure_github_app_identifier github-app-id \
+    "App ID" "${GITHUB_APP_ID:-}"
+  ensure_github_app_identifier github-app-installation-id \
+    "Installation ID" "${GITHUB_APP_INSTALLATION_ID:-}"
+  ensure_github_app_private_key github-app-private-key
+}
+
 main() {
   cd "$(git rev-parse --show-toplevel)" || die "not inside a git work tree"
 
@@ -119,6 +196,7 @@ main() {
   ensure_billing_link
   ensure_state_bucket
   apply_bootstrap_layer
+  ensure_github_app_secrets
 }
 
 main "$@"

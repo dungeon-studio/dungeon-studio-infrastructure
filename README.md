@@ -39,8 +39,9 @@ Two recipes make up the operator surface:
 
 - `just bootstrap` — creates the `dungeon-studio-infrastructure` project, the
   `dungeon-studio-tfstate` state bucket, the Workload Identity Federation pool,
-  and the deployer service accounts. Run it once per machine, or to rotate
-  those credentials.
+  and the deployer service accounts, then prompts for the GitHub App
+  credentials the org layer authenticates with. Run it once per machine, or to
+  rotate the deployer credentials.
 - `just org` — local `terraform apply` against the org layer, run after
   merging to `develop`. It reads the GitHub App credentials out of Secret
   Manager, so register the App before the first run.
@@ -87,9 +88,10 @@ with.
 
 The org layer's `github` provider authenticates as a GitHub App, so its
 permissions are visible in the org's settings and its key rotates without
-touching anyone's account. Bootstrap creates the Secret Manager secrets that
-hold the App's ID, installation ID, and private key, but leaves them empty —
-Terraform never sees the key material.
+touching anyone's account. Terraform creates the Secret Manager secrets that
+hold the App's ID, installation ID, and private key but leaves them empty;
+`just bootstrap` prompts for the values, so the key material never reaches a
+state file.
 
 [docs/how-to/create-github-app.md](docs/how-to/create-github-app.md) covers
 registering the App, filling those secrets, and rotating the key.
