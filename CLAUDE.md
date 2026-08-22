@@ -47,7 +47,7 @@ in a scoped PR ships infra the reviewer didn't ask for.
 
 ## Gotchas
 
-- Pre-commit hooks are the CI gate; all must pass. New files need
+- Pre-commit hooks gate every commit; all must pass. New files need
   SPDX headers — `reuse lint` flags missing ones, and it walks
   anything git neither tracks nor ignores. Formats without comment
   syntax get a path annotation in `REUSE.toml` instead.

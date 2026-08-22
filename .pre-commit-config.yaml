@@ -67,9 +67,7 @@ repos:
         # writes to stdout and exits 0 on files it would have rewritten.
         args: [--write, -i, '2', -ci]
 
-  # Terraform. terraform_validate is absent by design: it needs backend
-  # initialization and GCS authentication via workload identity federation,
-  # which a commit hook cannot provide.
+  # Terraform
   - repo: https://github.com/antonbabenko/pre-commit-terraform
     rev: v1.108.1
     hooks:
