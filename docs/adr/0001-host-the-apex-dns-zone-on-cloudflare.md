@@ -51,11 +51,12 @@ exists to hide. Hiding it needs a paid plan. The free tier fails
 requirement 2; the paid tier fails requirement 4.
 
 **ImprovMX on Cloud DNS** keeps the destination out of DNS and the apex
-where it is; the zone carries only MX and SPF records. Its Terraform
-provider is a community project [archived in February 2026][improvmx-tf],
-so requirement 1 holds only against an unmaintained dependency. The free
-tier covers one domain and 25 aliases. It is a vendor used nowhere else
-here.
+where it is, so no cutover is needed and the zone carries only MX and
+SPF records. Its Terraform provider is a community project [archived in
+February 2026][improvmx-tf], so requirement 1 holds only against a
+dependency that breaks when the API moves. ImprovMX is used nowhere
+else here, so requirement 3 counts it as a wholly new vendor rather
+than a second zone under an existing one.
 
 Cloudflare is already a vendor here. The account
 `alunduil-infrastructure` runs `alunduil.com` on the free plan,
