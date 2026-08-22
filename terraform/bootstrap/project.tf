@@ -1,8 +1,8 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-# scripts/bootstrap-terraform-state.sh creates the project, because the state
-# bucket lives inside it. Adopting it here keeps billing and labels in code.
+# scripts/bootstrap.sh creates the project, because the state bucket lives
+# inside it. Adopting it here keeps billing and labels in code.
 # The import block is idempotent once the project is in state, so it stays.
 import {
   to = google_project.org

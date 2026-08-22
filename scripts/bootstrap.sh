@@ -2,9 +2,9 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 #
-# Creates the GCP project and GCS bucket holding Terraform state — the two
-# things terraform/bootstrap/ cannot create for itself, because its own state
-# lives in them. Re-running is a no-op.
+# First-time setup. Creates the GCP project and GCS bucket holding Terraform
+# state — which terraform/bootstrap/ cannot create for itself, because its own
+# state lives in them — then applies that layer. Re-running is a no-op.
 
 set -euo pipefail
 
@@ -12,6 +12,7 @@ PROJECT_ID="${PROJECT_ID:-dungeon-studio}"
 PROJECT_NAME="${PROJECT_NAME:-Dungeon Studio}"
 BUCKET_NAME="${BUCKET_NAME:-dungeon-studio-tfstate}"
 LOCATION="${LOCATION:-europe-west2}"
+LAYER="terraform/bootstrap"
 
 die() {
   echo "error: $*" >&2
@@ -20,8 +21,19 @@ die() {
 
 check_preconditions() {
   command -v gcloud >/dev/null || die "gcloud not found in PATH"
-  [[ -n "${TF_VAR_billing_account_id:-}" ]] ||
-    die "TF_VAR_billing_account_id is unset; see README.md"
+  command -v terraform >/dev/null || die "terraform not found in PATH"
+}
+
+# Both the billing link below and `terraform apply` read this, and each would
+# otherwise ask for it separately.
+resolve_billing_account() {
+  [[ -z "${TF_VAR_billing_account_id:-}" ]] || return
+
+  [[ -t 0 ]] || die "TF_VAR_billing_account_id is unset and stdin is not a terminal"
+
+  gcloud billing accounts list
+  read -r -p "Billing account ID: " TF_VAR_billing_account_id
+  export TF_VAR_billing_account_id
 }
 
 ensure_project() {
@@ -71,11 +83,20 @@ ensure_state_bucket() {
     --versioning
 }
 
+apply_bootstrap_layer() {
+  terraform -chdir="${LAYER}" init
+  terraform -chdir="${LAYER}" apply
+}
+
 main() {
+  cd "$(git rev-parse --show-toplevel)" || die "not inside a git work tree"
+
   check_preconditions
+  resolve_billing_account
   ensure_project
   ensure_billing_link
   ensure_state_bucket
+  apply_bootstrap_layer
 }
 
 main "$@"

@@ -61,8 +61,7 @@ neither repository's continuous integration can read the other's state.
 
 Beyond the tooling above you need [Terraform](https://terraform.io), the
 [gcloud CLI](https://cloud.google.com/sdk/docs/install), and an account that
-can create GCP projects and link billing. `gcloud billing accounts list` prints
-the account IDs available to you.
+can create GCP projects and link billing.
 
 Log in twice. The bootstrap script calls `gcloud`, which uses its own
 credentials, and Terraform reads application default credentials, which
@@ -71,10 +70,13 @@ credentials, and Terraform reads application default credentials, which
 ```sh
 gcloud auth login
 gcloud auth application-default login
-export TF_VAR_billing_account_id=XXXXXX-XXXXXX-XXXXXX
 
 just bootstrap
 ```
+
+The recipe lists your billing accounts and prompts for the one to attach. Set
+`TF_VAR_billing_account_id` beforehand to skip the prompt; the run then needs
+no terminal.
 
 Every step is idempotent, so a partial failure is safe to re-run. Afterwards
 `terraform -chdir=terraform/bootstrap output` prints the federation provider
