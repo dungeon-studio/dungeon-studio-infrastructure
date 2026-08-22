@@ -65,13 +65,10 @@ subdomain.
   problems gain a second place to look. The existing Cloudflare account
   absorbs part of that cost. The token, the provider version, and the
   split surface remain.
-- Bad, because the cutover is a one-time risk to a live site. Moving
-  authority means disabling DNSSEC at the Squarespace registrar,
-  repointing the nameservers, and re-enabling DNSSEC with Cloudflare's
-  DS record. The zone is unsigned between those steps. Run them out of
-  order and it becomes unresolvable. The Squarespace A records, the
-  `www` CNAME, and the `genshin` NS delegation all have to exist in
-  Cloudflare, unproxied, before the nameservers change.
+- Bad, because moving authority is a one-time risk to a live site. The
+  DNSSEC chain stays broken until Cloudflare's DS record replaces the
+  one at `.studio`, and the zone's existing records have to answer from
+  Cloudflare before the nameservers change.
 - Neutral, because Cloudflare's proxy, WAF, and redirect rules become
   reachable at the apex. Nothing here needs them, and enabling them
   later is its own decision.
