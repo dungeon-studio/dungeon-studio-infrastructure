@@ -7,12 +7,12 @@
 # in state, so the block stays as the record of where the project came from.
 import {
   to = google_project.org
-  id = "dungeon-studio-org"
+  id = local.project_id
 }
 
 resource "google_project" "org" {
   name                = "Dungeon Studio Org"
-  project_id          = "dungeon-studio-org"
+  project_id          = local.project_id
   auto_create_network = false
   billing_account     = var.billing_account_id
 

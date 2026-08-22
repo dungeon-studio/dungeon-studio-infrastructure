@@ -31,31 +31,3 @@ resource "google_project_iam_member" "github_deployer_ro_planner" {
   role    = google_project_iam_custom_role.github_deployer_ro_planner.name
   member  = "serviceAccount:${google_service_account.github_deployer_ro.email}"
 }
-
-resource "google_storage_bucket_iam_member" "github_deployer_ro_state_object_viewer" {
-  bucket = data.google_storage_bucket.state.name
-  role   = "roles/storage.objectViewer"
-  member = "serviceAccount:${google_service_account.github_deployer_ro.email}"
-}
-
-resource "google_storage_bucket_iam_member" "github_deployer_ro_state_bucket_reader" {
-  bucket = data.google_storage_bucket.state.name
-  role   = "roles/storage.legacyBucketReader"
-  member = "serviceAccount:${google_service_account.github_deployer_ro.email}"
-}
-
-resource "google_service_account_iam_member" "github_deployer_ro_workload_identity_user" {
-  service_account_id = google_service_account.github_deployer_ro.name
-  role               = "roles/iam.workloadIdentityUser"
-  member             = local.wif_principal_repository
-
-  depends_on = [google_iam_workload_identity_pool_provider.github]
-}
-
-resource "google_service_account_iam_member" "github_deployer_ro_token_creator" {
-  service_account_id = google_service_account.github_deployer_ro.name
-  role               = "roles/iam.serviceAccountTokenCreator"
-  member             = local.wif_principal_repository
-
-  depends_on = [google_iam_workload_identity_pool_provider.github]
-}

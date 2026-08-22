@@ -5,5 +5,5 @@
 # managing the bucket here would be circular. Its lifecycle, including object
 # versioning, belongs to scripts/bootstrap-terraform-state.sh.
 data "google_storage_bucket" "state" {
-  name = "dungeon-studio-tfstate"
+  name = local.state_bucket
 }

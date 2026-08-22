@@ -34,31 +34,3 @@ resource "google_project_iam_member" "github_deployer_rw_applier" {
   role    = google_project_iam_custom_role.github_deployer_rw_applier.name
   member  = "serviceAccount:${google_service_account.github_deployer_rw.email}"
 }
-
-resource "google_storage_bucket_iam_member" "github_deployer_rw_state_object_admin" {
-  bucket = data.google_storage_bucket.state.name
-  role   = "roles/storage.objectAdmin"
-  member = "serviceAccount:${google_service_account.github_deployer_rw.email}"
-}
-
-resource "google_storage_bucket_iam_member" "github_deployer_rw_state_bucket_reader" {
-  bucket = data.google_storage_bucket.state.name
-  role   = "roles/storage.legacyBucketReader"
-  member = "serviceAccount:${google_service_account.github_deployer_rw.email}"
-}
-
-resource "google_service_account_iam_member" "github_deployer_rw_workload_identity_user" {
-  service_account_id = google_service_account.github_deployer_rw.name
-  role               = "roles/iam.workloadIdentityUser"
-  member             = local.wif_principal_develop
-
-  depends_on = [google_iam_workload_identity_pool_provider.github]
-}
-
-resource "google_service_account_iam_member" "github_deployer_rw_token_creator" {
-  service_account_id = google_service_account.github_deployer_rw.name
-  role               = "roles/iam.serviceAccountTokenCreator"
-  member             = local.wif_principal_develop
-
-  depends_on = [google_iam_workload_identity_pool_provider.github]
-}

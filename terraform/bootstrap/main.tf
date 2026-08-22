@@ -12,6 +12,6 @@ terraform {
 }
 
 provider "google" {
-  project = "dungeon-studio-org"
+  project = local.project_id
   region  = "europe-west2"
 }

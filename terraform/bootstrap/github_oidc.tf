@@ -48,7 +48,7 @@ resource "google_iam_workload_identity_pool_provider" "github" {
     "attribute.ref"              = "assertion.ref"
   }
 
-  attribute_condition = "assertion.repository == 'dungeon-studio/dungeon-studio-infrastructure'"
+  attribute_condition = "assertion.repository == '${local.github_repository}'"
 
   oidc {
     issuer_uri = "https://token.actions.githubusercontent.com"
@@ -58,9 +58,10 @@ resource "google_iam_workload_identity_pool_provider" "github" {
 locals {
   wif_pool = "projects/${google_project.org.number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.github.workload_identity_pool_id}"
 
-  # Plan runs on pull requests, so the read-only principal cannot be pinned to
-  # a branch; the provider's attribute_condition is what bounds it. Apply only
-  # ever runs against the default branch.
-  wif_principal_repository = "principalSet://iam.googleapis.com/${local.wif_pool}/attribute.repository/dungeon-studio/dungeon-studio-infrastructure"
-  wif_principal_develop    = "principalSet://iam.googleapis.com/${local.wif_pool}/attribute.ref/refs/heads/develop"
+  # Plan runs on pull requests, so this one cannot be pinned to a branch; the
+  # provider's attribute_condition is the whole of what bounds it.
+  wif_principal_any_ref = "principalSet://iam.googleapis.com/${local.wif_pool}/attribute.repository/${local.github_repository}"
+
+  # Apply only ever runs against the default branch.
+  wif_principal_develop = "principalSet://iam.googleapis.com/${local.wif_pool}/attribute.ref/refs/heads/develop"
 }
