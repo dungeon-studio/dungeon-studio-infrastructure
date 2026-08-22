@@ -1,0 +1,128 @@
+<!-- SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com> -->
+<!-- SPDX-License-Identifier: MIT -->
+
+# Create the GitHub App
+
+The `github` provider in `terraform/org/` authenticates as a GitHub App
+installed on the `dungeon-studio` org, not as a person. This covers
+registering that App, filling the Secret Manager secrets `just org` reads,
+and rotating the private key later on.
+
+Run `just bootstrap` first — it creates the three secrets this fills, empty.
+You also need an owner role in the org and permission to add secret versions
+in the `dungeon-studio-infrastructure` project.
+
+## Register the App
+
+1. Open
+   <https://github.com/organizations/dungeon-studio/settings/apps/new>.
+
+2. Set **GitHub App name** to `dungeon-studio-terraform` and **Homepage
+   URL** to
+   <https://github.com/dungeon-studio/dungeon-studio-infrastructure>.
+
+3. Clear **Webhook → Active**. Terraform calls the API and never receives
+   events, so a webhook URL would be one more endpoint to keep alive.
+
+4. Grant these permissions and no others:
+
+   - **Repository → Administration**, read and write: repositories, their
+     settings, and repository rulesets.
+   - **Repository → Issues**, read and write: the shared label set.
+   - **Organization → Administration**, read and write: org settings, org
+     rulesets, and the Actions allowlist.
+   - **Organization → Members**, read and write: teams and their
+     membership.
+
+   GitHub adds **Repository → Metadata**, read-only, on its own. Leave it.
+   Extend the set when a resource in `terraform/org/` fails without it,
+   rather than granting ahead of need.
+
+5. Under **Where can this GitHub App be installed?** choose **Only on this
+   account**.
+
+6. Select **Create GitHub App**, then record the **App ID** shown on the
+   General tab.
+
+7. Under **Private keys**, select **Generate a private key**. GitHub hands
+   over the `.pem` once and keeps only its fingerprint, so a lost key means
+   generating another rather than recovering this one.
+
+## Install the App on the org
+
+1. From the App's **Install App** tab, install it on `dungeon-studio` with
+   **All repositories** selected. Terraform manages every repository in the
+   org, and a subset leaves resources it cannot refresh.
+
+2. Record the installation ID. It is the last path segment of the URL you
+   land on:
+
+   ```text
+   https://github.com/organizations/dungeon-studio/settings/installations/<ID>
+   ```
+
+## Fill the secrets
+
+Add a version to each of the three secrets:
+
+```sh
+printf '%s' '<APP_ID>' |
+  gcloud secrets versions add github-app-id \
+    --project dungeon-studio-infrastructure --data-file=-
+
+printf '%s' '<INSTALLATION_ID>' |
+  gcloud secrets versions add github-app-installation-id \
+    --project dungeon-studio-infrastructure --data-file=-
+
+gcloud secrets versions add github-app-private-key \
+  --project dungeon-studio-infrastructure \
+  --data-file ~/Downloads/dungeon-studio-terraform.*.private-key.pem
+```
+
+Then destroy the downloaded key, which no longer has a reader:
+
+```sh
+shred --remove ~/Downloads/dungeon-studio-terraform.*.private-key.pem
+```
+
+## Confirm the provider authenticates
+
+```sh
+just org
+```
+
+The apply prints `github_organization_id`. Reaching that output means the
+App minted an installation token and GitHub accepted it. A wrong ID, a
+mismatched key, and a missing installation each fail before it.
+
+## Rotate the private key
+
+An App holds two private keys at once, so the replacement starts working
+before the old key goes away and no run needs timing around the change.
+
+1. Generate a second private key under **Private keys** on the App's
+   General tab.
+
+2. Add it as a new secret version:
+
+   ```sh
+   gcloud secrets versions add github-app-private-key \
+     --project dungeon-studio-infrastructure \
+     --data-file ~/Downloads/<new-key>.private-key.pem
+   ```
+
+3. Run `just org`. It reads the latest version, so an apply that succeeds
+   is the new key working.
+
+4. Delete the old key on the App's General tab.
+
+5. Destroy the superseded secret version, which stays readable until you
+   do:
+
+   ```sh
+   gcloud secrets versions destroy <N> \
+     --secret github-app-private-key \
+     --project dungeon-studio-infrastructure
+   ```
+
+6. Shred the downloaded `.pem`.
