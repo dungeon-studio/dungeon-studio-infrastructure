@@ -40,7 +40,6 @@ Neither is implemented yet. Each names its tracking issue when run.
 | ---------------------- | ------------------------------------------------- |
 | `terraform/bootstrap/` | State backend and credentials, applied by hand    |
 | `terraform/org/`       | Steady-state org config, applied after each merge |
-| `docs/how-to/`         | Operator procedures                               |
 
 The two Terraform layers split on credentials and blast radius, not on
 provider: `bootstrap` runs rarely with elevated human credentials and produces
@@ -48,8 +47,7 @@ what `org` consumes.
 
 ## Contributing
 
-Checks run through pre-commit — see
-[docs/how-to/run-the-checks.md](docs/how-to/run-the-checks.md).
+Checks run through pre-commit; every hook must pass.
 
 This is infrastructure maintained for the organization's own use. Issues and
 pull requests from outside collaborators are not actively solicited and may
