@@ -9,11 +9,15 @@ Proposed
 
 ## Context
 
-This repository holds org-level infrastructure that no single product
-owns, and its choices outlive the pull requests that make them. A
-later reader who reconstructs a standing decision wrong ships the
-mistake: `terraform apply` runs out-of-band after merge, against live
-org state.
+Decisions here outlive the pull requests that make them, and nothing
+in the repository records why they went the way they did. Terraform
+shows the configuration a decision produced, git shows when it changed
+and who changed it, and the issue tracker shows what was asked for.
+None of them records the alternatives, or what the chosen option cost.
+
+A reader without that cannot tell a weighed decision from a default.
+Settled questions get reopened, and deliberate trade-offs get undone by
+someone who never knew they were trade-offs.
 
 The product monorepo records this class of decision as numbered
 explanation documents under `docs/explanation/`. That numbering is the
@@ -38,9 +42,8 @@ message.
 
 ## Consequences
 
-A reader can find the reasoning behind a standing decision without
-reading git history or the issue tracker, and can tell a decision that
-was weighed from one that was defaulted into.
+The reasoning behind a standing decision sits beside the decision, so
+a reader reaches it without excavating git history or the tracker.
 
 The organization now has two shapes for the same kind of document, so
 a reference that crosses repositories has to say which it points at.
