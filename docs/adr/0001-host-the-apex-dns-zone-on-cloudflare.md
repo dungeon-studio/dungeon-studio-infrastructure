@@ -9,10 +9,11 @@ Proposed
 
 ## Context
 
-`genshin.dungeon.studio` publishes a privacy policy and terms of
-service, and both need a contact address that is not a personal inbox
-([genshin.dungeon.studio#647][647]). `privacy@dungeon.studio` is an
-apex-domain address, so whatever delivers it constrains the apex zone.
+The product monorepo carries draft privacy policy and terms of service
+pages, and the privacy page records that it needs a dedicated contact
+address before the 1.0.0 tag ([genshin.dungeon.studio#647][647]).
+`privacy@dungeon.studio` is an apex-domain address, so whatever
+delivers it constrains the apex zone.
 
 The apex is already authoritative on Google Cloud DNS
 (`ns-cloud-d1..d4.googledomains.com`), DNSSEC-signed with a DS record
@@ -49,10 +50,12 @@ apex stays where it is and the records are ordinary
 exists to hide. Hiding it needs a paid plan. The free tier fails
 requirement 2; the paid tier fails requirement 4.
 
-**ImprovMX on Cloud DNS** keeps the destination private and the apex on
-Cloud DNS, but the alias map lives in ImprovMX's dashboard and has no
-Terraform provider, so the mail configuration leaves version control.
-This fails requirement 1.
+**ImprovMX on Cloud DNS** keeps the destination out of DNS and the apex
+where it is; the zone carries only MX and SPF records. Its Terraform
+provider is a community project [archived in February 2026][improvmx-tf],
+so requirement 1 holds only against an unmaintained dependency. The free
+tier covers one domain and 25 aliases. It is a vendor used nowhere else
+here.
 
 Cloudflare is already a vendor here. The account
 `alunduil-infrastructure` runs `alunduil.com` on the free plan,
@@ -104,9 +107,14 @@ neither fixes nor worsens this.
   requirement.
 - [Cloudflare Email Routing: limits][limits] — destination and rule
   counts.
-- [genshin.dungeon.studio#647][647] — where the address is needed.
+- [genshin.dungeon.studio#647][647] — the privacy policy and terms of
+  service drafts.
+- [Delegating a subdomain to nameservers outside Cloudflare][delegate] —
+  the mechanism the `genshin` NS records use.
 
 [647]: https://github.com/dungeon-studio/genshin.dungeon.studio/issues/647
+[delegate]: https://developers.cloudflare.com/dns/manage-dns-records/how-to/subdomains-outside-cloudflare/
 [enable]: https://developers.cloudflare.com/email-routing/get-started/enable-email-routing/
+[improvmx-tf]: https://github.com/issyl0/terraform-provider-improvmx
 [limits]: https://developers.cloudflare.com/email-routing/limits/
 [partial]: https://developers.cloudflare.com/dns/zone-setups/partial-setup/
