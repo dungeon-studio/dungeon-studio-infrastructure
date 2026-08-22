@@ -9,7 +9,7 @@
 set -euo pipefail
 
 PROJECT_ID="${PROJECT_ID:-dungeon-studio-infrastructure}"
-PROJECT_NAME="${PROJECT_NAME:-Dungeon Studio Infrastructure}"
+PROJECT_NAME="${PROJECT_NAME:-DS Infrastructure}"
 BUCKET_NAME="${BUCKET_NAME:-dungeon-studio-tfstate}"
 LOCATION="${LOCATION:-europe-west2}"
 LAYER="terraform/bootstrap"

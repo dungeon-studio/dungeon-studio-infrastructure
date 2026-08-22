@@ -10,7 +10,9 @@ import {
 }
 
 resource "google_project" "org" {
-  name                = "Dungeon Studio Infrastructure"
+  # There is no GCP organization to group these projects, so the shared "DS"
+  # prefix does it in project lists instead.
+  name                = "DS Infrastructure"
   project_id          = local.project_id
   auto_create_network = false
   billing_account     = var.billing_account_id
