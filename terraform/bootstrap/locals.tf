@@ -2,7 +2,9 @@
 # SPDX-License-Identifier: MIT
 
 locals {
-  project_id = "dungeon-studio"
+  # `dungeon-studio` is permanently reserved by a deleted project; GCP never
+  # frees a project ID.
+  project_id = "dungeon-studio-org"
 
   # backend.tf repeats this literal; backend blocks cannot interpolate.
   state_bucket = "dungeon-studio-tfstate"
