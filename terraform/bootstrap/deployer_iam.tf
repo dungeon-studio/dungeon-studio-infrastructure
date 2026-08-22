@@ -1,9 +1,6 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-# The two deployers take the same four grants and differ on exactly two axes.
-# Stating the difference as a table keeps it reviewable: written out per
-# account, a wrong bucket role or principal reads as symmetry.
 locals {
   deployers = {
     ro = {
@@ -37,9 +34,8 @@ resource "google_storage_bucket_iam_member" "deployer_state_bucket_reader" {
   member = "serviceAccount:${each.value.email}"
 }
 
-# Authentication happens in two steps — the pool admits the GitHub token as
-# the account, then an access token is minted for it — and each step is
-# authorized by one of these roles.
+# Token exchange takes two steps — the pool admits the GitHub token as the
+# account, then mints an access token for it — and each needs its own role.
 resource "google_service_account_iam_member" "deployer_workload_identity_user" {
   for_each = local.deployers
 

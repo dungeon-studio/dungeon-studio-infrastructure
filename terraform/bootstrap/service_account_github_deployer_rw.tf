@@ -11,7 +11,6 @@ resource "google_service_account" "github_deployer_rw" {
 }
 
 # Extend only when a resource in terraform/org/ fails to apply without it.
-# Omits billing.*, which stays with the human who runs bootstrap.
 resource "google_project_iam_custom_role" "github_deployer_rw_applier" {
   project     = google_project.org.project_id
   role_id     = "githubDeployerApplier"

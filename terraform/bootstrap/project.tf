@@ -2,9 +2,8 @@
 # SPDX-License-Identifier: MIT
 
 # scripts/bootstrap-terraform-state.sh creates the project, because the state
-# bucket lives inside it. Terraform adopts it here so billing, labels, and
-# audit configuration stay in code. Import is idempotent once the resource is
-# in state, so the block stays as the record of where the project came from.
+# bucket lives inside it. Adopting it here keeps billing and labels in code.
+# The import block is idempotent once the project is in state, so it stays.
 import {
   to = google_project.org
   id = local.project_id
@@ -55,7 +54,7 @@ resource "google_project_service" "serviceusage" {
   depends_on = [google_project_service.iam]
 }
 
-# Data Access logs are opt-in per service. Without these, a compromised plan
+# Data Access logs are opt-in per service. Without them, a compromised plan
 # job could read every object in the state bucket and leave no trace beyond
 # the STS impersonation row in Admin Activity.
 resource "google_project_iam_audit_config" "storage" {

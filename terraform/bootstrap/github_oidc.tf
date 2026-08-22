@@ -29,8 +29,8 @@ resource "google_iam_workload_identity_pool" "github" {
   depends_on = [google_project_service.sts]
 }
 
-# Scoped to this repository alone. Each dungeon-studio repository keeps its own
-# pool, so a token minted for one cannot reach another's state.
+# Each dungeon-studio repository keeps its own pool, so a token minted for one
+# cannot reach another's state.
 resource "google_iam_workload_identity_pool_provider" "github" {
   project                            = google_project.org.project_id
   workload_identity_pool_id          = google_iam_workload_identity_pool.github.workload_identity_pool_id
@@ -58,8 +58,8 @@ resource "google_iam_workload_identity_pool_provider" "github" {
 locals {
   wif_pool = "projects/${google_project.org.number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.github.workload_identity_pool_id}"
 
-  # Plan runs on pull requests, so this one cannot be pinned to a branch; the
-  # provider's attribute_condition is the whole of what bounds it.
+  # Plan runs on pull requests, so no branch pins this one and
+  # attribute_condition is its only bound.
   wif_principal_any_ref = "principalSet://iam.googleapis.com/${local.wif_pool}/attribute.repository/${local.github_repository}"
 
   # Apply only ever runs against the default branch.

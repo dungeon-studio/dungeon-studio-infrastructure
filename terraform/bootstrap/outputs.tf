@@ -3,7 +3,7 @@
 
 output "project_id" {
   value       = google_project.org.project_id
-  description = "Org GCP project ID, consumed by terraform/org/ via terraform_remote_state"
+  description = "Org GCP project ID"
   sensitive   = false
 }
 
@@ -21,7 +21,7 @@ output "state_bucket" {
 
 output "workload_identity_provider" {
   value       = google_iam_workload_identity_pool_provider.github.name
-  description = "Full resource name of the GitHub WIF provider, for the google-github-actions/auth workload_identity_provider input"
+  description = "GitHub WIF provider, for google-github-actions/auth's workload_identity_provider input"
   sensitive   = false
 }
 

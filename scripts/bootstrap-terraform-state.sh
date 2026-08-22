@@ -64,9 +64,8 @@ ensure_state_bucket() {
       --uniform-bucket-level-access
   fi
 
-  # Outside the conditional so an existing bucket converges too. Object
-  # versioning is what makes a truncated or corrupted state file recoverable;
-  # without it the bucket holds one copy of everything.
+  # Runs unconditionally so an existing bucket converges. Versioning is what
+  # makes a corrupted state file recoverable.
   gcloud storage buckets update "gs://${BUCKET_NAME}" \
     --project "${PROJECT_ID}" \
     --versioning
