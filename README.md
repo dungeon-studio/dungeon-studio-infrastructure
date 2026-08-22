@@ -3,7 +3,7 @@
 
 # dungeon-studio-infrastructure
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSES/MIT.txt)
+[![License](https://img.shields.io/github/license/dungeon-studio/dungeon-studio-infrastructure)](LICENSES/MIT.txt)
 [![REUSE status](https://api.reuse.software/badge/github.com/dungeon-studio/dungeon-studio-infrastructure)](https://api.reuse.software/info/github.com/dungeon-studio/dungeon-studio-infrastructure)
 [![Renovate enabled](https://img.shields.io/badge/renovate-enabled-brightgreen?logo=renovatebot)](renovate.json)
 
@@ -14,9 +14,9 @@ Organization infrastructure as code for Dungeon Studio, managed with Terraform.
 
 ## Scope
 
-Org-level state that no single product owns: the GCP org and billing baseline,
-the apex `dungeon.studio` DNS zone, and the GitHub org with its repositories,
-labels, and rulesets.
+Org-level state that no single product owns: the GCP project and billing
+baseline, the apex `dungeon.studio` DNS zone, and the GitHub org with its
+repositories, labels, and rulesets.
 
 Product infrastructure stays with its product. `genshin.dungeon.studio` owns
 its own DNS zone in the
@@ -37,12 +37,13 @@ command is the whole local setup.
 
 Two recipes make up the operator surface:
 
-- `just bootstrap` — first-time setup and credential rotation. Provisions the
-  Terraform state backend and the credentials later applies depend on.
+- `just bootstrap` — creates the `dungeon-studio-infrastructure` project, the
+  `dungeon-studio-tfstate` state bucket, the Workload Identity Federation pool,
+  and the deployer service accounts. Run it once per machine, or to rotate
+  those credentials.
 - `just org` — local `terraform apply` against the org layer, run after
-  merging to `develop`.
-
-Neither is implemented yet. Each names its tracking issue when you run it.
+  merging to `develop`. Not implemented yet; it names its tracking issue when
+  you run it.
 
 ## Layout
 
@@ -51,6 +52,36 @@ on provider. `terraform/bootstrap/` runs rarely, with elevated human
 credentials, and provisions the state backend; `terraform/org/` holds the
 steady-state org configuration, consumes what bootstrap produced, and is
 applied after each merge.
+
+Both layers store state in the `dungeon-studio-tfstate` bucket under their own
+prefix. `genshin.dungeon.studio` keeps a separate bucket in its own project, so
+neither repository's continuous integration can read the other's state.
+
+## Run the first-time bootstrap
+
+Beyond the tooling above you need [Terraform](https://terraform.io), the
+[gcloud CLI](https://cloud.google.com/sdk/docs/install), and an account that
+can create GCP projects and link billing.
+
+Log in twice. The bootstrap script calls `gcloud`, which uses its own
+credentials, and Terraform reads application default credentials, which
+`gcloud auth login` does not write:
+
+```sh
+gcloud auth login
+gcloud auth application-default login
+
+just bootstrap
+```
+
+The recipe lists your billing accounts and prompts for the one to attach. Set
+`TF_VAR_billing_account_id` beforehand to skip the prompt; the run then needs
+no terminal.
+
+Every step is idempotent, so a partial failure is safe to re-run. Afterwards
+`terraform -chdir=terraform/bootstrap output` prints the federation provider
+and deployer service account emails that GitHub Actions workflows authenticate
+with.
 
 ## Contributing
 

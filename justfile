@@ -8,7 +8,8 @@ _unimplemented layer issue:
     @exit 1
 
 [doc("First-time setup: state backend, bootstrap layer, CI credentials.")]
-bootstrap: (_unimplemented "terraform/bootstrap/" "2")
+bootstrap:
+    scripts/bootstrap.sh
 
 [doc("Local post-merge apply for the org layer (GCP baseline, DNS, GitHub).")]
 org: (_unimplemented "terraform/org/" "5")
