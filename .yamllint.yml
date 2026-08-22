@@ -13,7 +13,7 @@ rules:
   # (e.g. `... # v4`); accept that style.
   comments:
     min-spaces-from-content: 1
-  # GitHub Actions uses 'on:' as a top-level key; disable truthy check on keys
-  # so workflow files don't have to quote it.
+  # GitHub Actions uses 'on:' as a top-level key; without this, every workflow
+  # file would have to quote it.
   truthy:
     check-keys: false

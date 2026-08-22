@@ -3,9 +3,8 @@
 
 # Run the repository checks
 
-Every check this repository enforces runs through pre-commit, including the
-ones CI runs. Run them locally before pushing so review isn't spent on
-formatting.
+Every check this repository enforces runs through pre-commit. Run them locally
+before pushing so review isn't spent on formatting.
 
 Assumes a working checkout and a Python environment you can install into.
 
@@ -19,30 +18,27 @@ pre-commit install
 Hook environments are built on first run, which takes a few minutes. Later
 runs reuse them.
 
-## Run against everything
+## Run the hooks
 
 ```sh
-pre-commit run --all-files
+pre-commit run --all-files   # everything
+pre-commit run reuse --all-files   # one hook
 ```
 
-Hooks whose file types aren't present yet report `Skipped` — the Terraform and
-shell hooks do this until `terraform/` and `scripts/` exist.
-
-## Run one hook
-
-```sh
-pre-commit run reuse --all-files
-```
+A hook with no matching files reports `Skipped`, which is not a failure. The
+Terraform and shell hooks report it today.
 
 ## Add a file that REUSE rejects
 
 `reuse lint` fails on any file without an `SPDX-FileCopyrightText` and an
-`SPDX-License-Identifier`. Add both as comments in the file's own syntax. For
-formats that have no comment syntax — JSON, generated lock files — add a path
-annotation to [`REUSE.toml`](../../REUSE.toml) instead.
+`SPDX-License-Identifier`. Add both as comments in the file's own syntax.
+Where a format has no comment syntax, add a path annotation to
+[`REUSE.toml`](../../REUSE.toml) instead.
 
-## Update a pinned hook version
+Untracked files count. Anything git neither tracks nor ignores still has to
+carry a header or an annotation.
 
-Renovate opens the pull request. Change
-[`renovate.json`](../../renovate.json) rather than editing a `rev:` by hand,
-so the pin and the policy stay in one place.
+## Move a hook to a newer version
+
+Renovate opens the pull request. Adjust [`renovate.json`](../../renovate.json)
+rather than editing a `rev:` by hand, so the pin and the policy stay together.

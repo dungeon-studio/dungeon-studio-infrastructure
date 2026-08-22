@@ -3,13 +3,11 @@
 
 issues_url := "https://github.com/dungeon-studio/dungeon-studio-infrastructure/issues"
 
-# Fails naming the issue that fills the recipe in, so `just <recipe>` points at
-# the work rather than at a missing directory.
 _unimplemented layer issue:
     @echo "Not implemented — {{ layer }} lands in {{ issues_url }}/{{ issue }}"
     @exit 1
 
-[doc("Manual surface: state backend, bootstrap layer, CI credentials.")]
+[doc("First-time setup: state backend, bootstrap layer, CI credentials.")]
 bootstrap: (_unimplemented "terraform/bootstrap/" "2")
 
 [doc("Local post-merge apply for the org layer (GCP baseline, DNS, GitHub).")]

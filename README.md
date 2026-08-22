@@ -32,10 +32,7 @@ The two operator entrypoints:
 - `just org` — local `terraform apply` against the org layer, run after
   merging to `develop`.
 
-Both are stubs today. `terraform/bootstrap/` and `terraform/org/` land in
-[#2](https://github.com/dungeon-studio/dungeon-studio-infrastructure/issues/2)
-and
-[#5](https://github.com/dungeon-studio/dungeon-studio-infrastructure/issues/5).
+Neither is implemented yet. Each names its tracking issue when run.
 
 ## Layout
 
