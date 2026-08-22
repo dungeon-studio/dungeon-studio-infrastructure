@@ -10,6 +10,11 @@ locals {
   # backend.tf repeats this literal; backend blocks cannot interpolate.
   state_bucket = "dungeon-studio-tfstate"
 
+  # terraform/org/backend.tf repeats this one for the same reason. Only this
+  # bucket names its layer: the other already holds live state, and renaming
+  # a bucket moves every object in it.
+  org_state_bucket = "dungeon-studio-org-tfstate"
+
   github_repository = "dungeon-studio/dungeon-studio-infrastructure"
 
   # scripts/bootstrap.sh repeats this literal as LOCATION; shell cannot read a

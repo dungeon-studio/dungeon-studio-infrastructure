@@ -3,7 +3,7 @@
 
 terraform {
   backend "gcs" {
-    bucket = "dungeon-studio-tfstate"
+    bucket = "dungeon-studio-org-tfstate"
     prefix = "org"
   }
 }

@@ -54,9 +54,12 @@ credentials, and provisions the state backend; `terraform/org/` holds the
 steady-state org configuration, consumes what bootstrap produced, and is
 applied after each merge.
 
-Both layers store state in the `dungeon-studio-tfstate` bucket under their own
-prefix. `genshin.dungeon.studio` keeps a separate bucket in its own project, so
-neither repository's continuous integration can read the other's state.
+Each layer stores state in its own bucket: `dungeon-studio-tfstate` for
+bootstrap, `dungeon-studio-org-tfstate` for org. The deployer service accounts
+are granted on the org bucket alone, and a bucket is the smallest thing those
+grants can name — so continuous integration cannot read or rewrite the state
+that defines its own credentials. `genshin.dungeon.studio` keeps a separate
+bucket in its own project on the same reasoning.
 
 ## Run the first-time bootstrap
 

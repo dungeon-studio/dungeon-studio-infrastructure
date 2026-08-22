@@ -15,7 +15,7 @@ output "project_number" {
 
 output "state_bucket" {
   value       = data.google_storage_bucket.state.name
-  description = "GCS bucket holding Terraform state for every layer in this repository"
+  description = "GCS bucket holding this layer's Terraform state"
   sensitive   = false
 }
 
