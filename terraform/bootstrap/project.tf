@@ -1,0 +1,72 @@
+# SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
+# SPDX-License-Identifier: MIT
+
+# scripts/bootstrap-terraform-state.sh creates the project, because the state
+# bucket lives inside it. Terraform adopts it here so billing, labels, and
+# audit configuration stay in code. Import is idempotent once the resource is
+# in state, so the block stays as the record of where the project came from.
+import {
+  to = google_project.org
+  id = "dungeon-studio-org"
+}
+
+resource "google_project" "org" {
+  name                = "Dungeon Studio Org"
+  project_id          = "dungeon-studio-org"
+  auto_create_network = false
+  billing_account     = var.billing_account_id
+
+  labels = {
+    environment = "production"
+    created_by  = "bootstrap"
+    managed_by  = "terraform"
+  }
+
+  lifecycle {
+    # Only consulted at creation, and the script does the creating.
+    ignore_changes = [auto_create_network]
+
+    prevent_destroy = true
+  }
+}
+
+resource "google_project_service" "iam" {
+  project = google_project.org.project_id
+  service = "iam.googleapis.com"
+
+  disable_on_destroy = false
+}
+
+resource "google_project_service" "cloudresourcemanager" {
+  project = google_project.org.project_id
+  service = "cloudresourcemanager.googleapis.com"
+
+  disable_on_destroy = false
+
+  depends_on = [google_project_service.iam]
+}
+
+resource "google_project_service" "serviceusage" {
+  project = google_project.org.project_id
+  service = "serviceusage.googleapis.com"
+
+  disable_on_destroy = false
+
+  depends_on = [google_project_service.iam]
+}
+
+# Data Access logs are opt-in per service. Without these, a compromised plan
+# job could read every object in the state bucket and leave no trace beyond
+# the STS impersonation row in Admin Activity.
+resource "google_project_iam_audit_config" "storage" {
+  project = google_project.org.project_id
+  service = "storage.googleapis.com"
+
+  audit_log_config {
+    log_type = "DATA_READ"
+  }
+
+  audit_log_config {
+    log_type = "DATA_WRITE"
+  }
+}

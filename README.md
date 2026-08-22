@@ -38,11 +38,11 @@ command is the whole local setup.
 Two recipes make up the operator surface:
 
 - `just bootstrap` — first-time setup and credential rotation. Provisions the
-  Terraform state backend and the credentials later applies depend on.
+  Terraform state backend and the credentials later applies depend on. See
+  [docs/how-to/bootstrap.md](docs/how-to/bootstrap.md).
 - `just org` — local `terraform apply` against the org layer, run after
-  merging to `develop`.
-
-Neither is implemented yet. Each names its tracking issue when you run it.
+  merging to `develop`. Not implemented yet; it names its tracking issue when
+  you run it.
 
 ## Layout
 
@@ -51,6 +51,10 @@ on provider. `terraform/bootstrap/` runs rarely, with elevated human
 credentials, and provisions the state backend; `terraform/org/` holds the
 steady-state org configuration, consumes what bootstrap produced, and is
 applied after each merge.
+
+Both layers store state in the `dungeon-studio-tfstate` bucket under their own
+prefix. `genshin.dungeon.studio` keeps a separate bucket in its own project, so
+neither repository's continuous integration can read the other's state.
 
 ## Contributing
 

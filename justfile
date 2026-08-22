@@ -7,8 +7,12 @@ _unimplemented layer issue:
     @echo "Not implemented — {{ layer }} lands in {{ issues_url }}/{{ issue }}"
     @exit 1
 
+# Every step is idempotent; safe to re-run after a partial failure.
 [doc("First-time setup: state backend, bootstrap layer, CI credentials.")]
-bootstrap: (_unimplemented "terraform/bootstrap/" "2")
+bootstrap:
+    scripts/bootstrap-terraform-state.sh
+    terraform -chdir=terraform/bootstrap init
+    terraform -chdir=terraform/bootstrap apply
 
 [doc("Local post-merge apply for the org layer (GCP baseline, DNS, GitHub).")]
 org: (_unimplemented "terraform/org/" "5")
