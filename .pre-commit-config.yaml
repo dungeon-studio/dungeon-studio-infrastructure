@@ -67,8 +67,9 @@ repos:
         # writes to stdout and exits 0 on files it would have rewritten.
         args: [--write, -i, '2', -ci]
 
-  # Terraform. terraform_validate needs backend initialization and GCS
-  # authentication via workload identity federation, so it runs in CI.
+  # Terraform. terraform_validate is absent by design: it needs backend
+  # initialization and GCS authentication via workload identity federation,
+  # which a commit hook cannot provide.
   - repo: https://github.com/antonbabenko/pre-commit-terraform
     rev: v1.108.1
     hooks:
@@ -85,17 +86,16 @@ repos:
       - id: reuse
         always_run: true
 
-  # GitHub Actions static analysis. Offline gate here; online supply-chain
-  # audits need a token and run in CI.
+  # GitHub Actions static analysis. Offline needs no credentials; the
+  # online supply-chain audits need a token.
   - repo: https://github.com/zizmorcore/zizmor-pre-commit
     rev: v1.29.0
     hooks:
       - id: zizmor
         args: [--no-progress, --offline]
 
-  # Secrets detection. Absent from the product monorepo, kept here because
-  # this repository handles cloud credentials directly and neither zizmor
-  # nor `trivy config` looks for secrets.
+  # Secrets detection. Neither zizmor nor `trivy config` looks for secrets,
+  # and this repository handles cloud credentials directly.
   - repo: https://github.com/Yelp/detect-secrets
     rev: v1.5.0
     hooks:
