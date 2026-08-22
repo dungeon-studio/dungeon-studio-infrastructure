@@ -4,16 +4,16 @@
 locals {
   deployers = {
     ro = {
-      service_account_id = google_service_account.github_deployer_ro.name
-      email              = google_service_account.github_deployer_ro.email
-      state_bucket_role  = "roles/storage.objectViewer"
-      principal          = local.wif_principal_any_ref
+      service_account_id        = google_service_account.github_deployer_ro.name
+      email                     = google_service_account.github_deployer_ro.email
+      infrastructure_state_role = "roles/storage.objectViewer"
+      principal                 = local.wif_principal_any_ref
     }
     rw = {
-      service_account_id = google_service_account.github_deployer_rw.name
-      email              = google_service_account.github_deployer_rw.email
-      state_bucket_role  = "roles/storage.objectAdmin"
-      principal          = local.wif_principal_develop
+      service_account_id        = google_service_account.github_deployer_rw.name
+      email                     = google_service_account.github_deployer_rw.email
+      infrastructure_state_role = "roles/storage.objectAdmin"
+      principal                 = local.wif_principal_develop
     }
   }
 
@@ -44,7 +44,7 @@ resource "google_storage_bucket_iam_member" "deployer_state_objects" {
   for_each = local.deployers
 
   bucket = google_storage_bucket.infrastructure_state.name
-  role   = each.value.state_bucket_role
+  role   = each.value.infrastructure_state_role
   member = "serviceAccount:${each.value.email}"
 }
 

@@ -85,7 +85,7 @@ ensure_billing_link() {
     --billing-account "${TF_VAR_billing_account_id}"
 }
 
-ensure_state_bucket() {
+ensure_bootstrap_state_bucket() {
   if gcloud storage buckets describe "gs://${BUCKET_NAME}" \
     --project "${PROJECT_ID}" >/dev/null 2>&1; then
     echo "Bucket gs://${BUCKET_NAME} already exists."
@@ -194,7 +194,7 @@ main() {
   resolve_billing_account
   ensure_project
   ensure_billing_link
-  ensure_state_bucket
+  ensure_bootstrap_state_bucket
   apply_bootstrap_layer
   ensure_github_app_secrets
 }
