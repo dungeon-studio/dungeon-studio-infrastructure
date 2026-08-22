@@ -16,21 +16,28 @@ locals {
       principal          = local.wif_principal_develop
     }
   }
+
+  # Every deployer reads every secret, so these grants are the cross product
+  # of the two tables rather than another column on the one above.
+  deployer_github_app_grants = {
+    for pair in setproduct(keys(local.deployers), local.github_app_secrets) :
+    "${pair[0]}-${pair[1]}" => {
+      email  = local.deployers[pair[0]].email
+      secret = pair[1]
+    }
+  }
 }
 
 # Plan authenticates the github provider as well as apply, so read access to
 # the App's credentials is not the applier's alone.
-resource "google_secret_manager_secret_iam_member" "deployer_github_app" {
-  for_each = {
-    for pair in setproduct(keys(local.deployers), local.github_app_secrets) :
-    "${pair[0]}-${pair[1]}" => {
-      email     = local.deployers[pair[0]].email
-      secret_id = pair[1]
-    }
-  }
+resource "google_secret_manager_secret_iam_member" "deployer_github_app_secrets" {
+  for_each = local.deployer_github_app_grants
 
-  project   = google_project.org.project_id
-  secret_id = google_secret_manager_secret.github_app[each.value.secret_id].secret_id
+  project = google_project.org.project_id
+
+  # Indexing the resource rather than repeating each.value.secret, which holds
+  # the same string, is what orders the grant after the secret it applies to.
+  secret_id = google_secret_manager_secret.github_app[each.value.secret].secret_id
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${each.value.email}"
 }

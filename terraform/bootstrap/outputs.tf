@@ -25,12 +25,6 @@ output "workload_identity_provider" {
   sensitive   = false
 }
 
-output "github_app_secrets" {
-  value       = [for secret in google_secret_manager_secret.github_app : secret.secret_id]
-  description = "Secret Manager secrets holding the GitHub App credentials terraform/org/ authenticates with"
-  sensitive   = false
-}
-
 output "github_deployer_ro_email" {
   value       = google_service_account.github_deployer_ro.email
   description = "Email of the read-only deployer service account (terraform plan)"

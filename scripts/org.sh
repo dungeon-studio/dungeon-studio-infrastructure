@@ -22,14 +22,14 @@ check_preconditions() {
   command -v terraform >/dev/null || die "terraform not found in PATH"
 }
 
+# A secret with no versions fails here, and set -e turns that into an exit
+# before terraform runs. Without it the provider would fall back to a personal
+# token and apply as whoever ran it.
 read_secret() {
   gcloud secrets versions access latest --secret "$1" --project "${PROJECT_ID}" ||
     die "cannot read secret $1 — see docs/how-to/create-github-app.md"
 }
 
-# A secret with no versions fails the read, which set -e turns into an exit
-# before terraform runs. Without that the provider would fall back to a
-# personal token and apply as whoever ran it.
 export_github_app_credentials() {
   GITHUB_APP_ID="$(read_secret github-app-id)"
   GITHUB_APP_INSTALLATION_ID="$(read_secret github-app-installation-id)"
@@ -38,14 +38,17 @@ export_github_app_credentials() {
   export GITHUB_APP_ID GITHUB_APP_INSTALLATION_ID GITHUB_APP_PEM_FILE
 }
 
+apply_org_layer() {
+  terraform -chdir="${LAYER}" init
+  terraform -chdir="${LAYER}" apply
+}
+
 main() {
   cd "$(git rev-parse --show-toplevel)" || die "not inside a git work tree"
 
   check_preconditions
   export_github_app_credentials
-
-  terraform -chdir="${LAYER}" init
-  terraform -chdir="${LAYER}" apply
+  apply_org_layer
 }
 
 main "$@"
