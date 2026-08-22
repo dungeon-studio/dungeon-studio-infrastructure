@@ -9,9 +9,10 @@ Proposed
 
 ## Context
 
-The [monorepo] carries draft privacy policy and terms of service pages
-([genshin.dungeon.studio#647][647]). The privacy page records that it
-needs a dedicated contact address before the 1.0.0 tag.
+The [genshin.dungeon.studio repository][genshin-repo] carries draft
+privacy policy and terms of service pages ([#647][647]). The privacy
+page records that it needs a dedicated contact address before the 1.0.0
+tag.
 `privacy@dungeon.studio` is an apex-domain address, so whatever
 delivers it constrains the apex zone.
 
@@ -19,7 +20,8 @@ The apex is already authoritative on Google Cloud DNS
 (`ns-cloud-d1..d4.googledomains.com`), and DNSSEC-signed with a DS
 record published at `.studio`. It answers with Squarespace A records.
 It delegates `genshin.dungeon.studio` by NS to a second Cloud DNS zone
-that the monorepo's `core` environment owns. None of it is under
+owned by the `core` environment of the
+[genshin.dungeon.studio repository][genshin-repo]. None of it is under
 Terraform here yet.
 
 Four requirements:
@@ -69,9 +71,10 @@ We will make Cloudflare authoritative for the apex `dungeon.studio`
 zone, and manage that zone and its Email Routing configuration from
 `terraform/org/` with the Cloudflare provider.
 
-`genshin.dungeon.studio` stays with the monorepo. The apex zone carries
-the NS delegation as Cloudflare records. The monorepo keeps ownership of
-the subdomain.
+The `genshin.dungeon.studio` zone stays in the [repository of the same
+name][genshin-repo]. The apex zone carries the NS delegation as
+Cloudflare records, and that repository keeps ownership of the
+subdomain.
 
 ## Consequences
 
@@ -97,8 +100,8 @@ Cloudflare's proxy, WAF, and redirect rules become reachable at the
 apex. Nothing here needs them, and enabling them later is its own
 decision.
 
-The `genshin.dungeon.studio` delegation stays insecure. The monorepo
-signs that zone, but the apex publishes no DS record for it, so the
+The `genshin.dungeon.studio` delegation stays insecure. Its repository
+signs the zone, but the apex publishes no DS record for it, so the
 chain of trust already breaks at the delegation. Moving the apex
 neither fixes nor worsens this.
 
@@ -116,7 +119,7 @@ neither fixes nor worsens this.
 [647]: https://github.com/dungeon-studio/genshin.dungeon.studio/issues/647
 [delegate]: https://developers.cloudflare.com/dns/manage-dns-records/how-to/subdomains-outside-cloudflare/
 [enable]: https://developers.cloudflare.com/email-routing/get-started/enable-email-routing/
+[genshin-repo]: https://github.com/dungeon-studio/genshin.dungeon.studio
 [improvmx-tf]: https://github.com/issyl0/terraform-provider-improvmx
 [limits]: https://developers.cloudflare.com/email-routing/limits/
-[monorepo]: https://github.com/dungeon-studio/genshin.dungeon.studio
 [partial]: https://developers.cloudflare.com/dns/zone-setups/partial-setup/

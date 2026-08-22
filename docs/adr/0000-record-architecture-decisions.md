@@ -41,10 +41,11 @@ message.
 The reasoning behind a standing decision sits beside the decision, so
 a reader reaches it without excavating git history or the tracker.
 
-The [monorepo] records this class of decision as numbered explanation
-documents under `docs/explanation/`, so the organization now has two
-shapes for the same kind of document. A reference that
-crosses repositories has to say which it points at.
+The [genshin.dungeon.studio repository][genshin-repo] records this
+class of decision as numbered explanation documents under
+`docs/explanation/`, so the organization now has two shapes for the
+same kind of document. A reference that crosses repositories has to say
+which it points at.
 
 Recording a decision costs a document, so the practice decays if it
 covers tactical choices.
@@ -53,5 +54,5 @@ covers tactical choices.
 
 - [Documenting Architecture Decisions][nygard], Michael Nygard.
 
-[monorepo]: https://github.com/dungeon-studio/genshin.dungeon.studio
+[genshin-repo]: https://github.com/dungeon-studio/genshin.dungeon.studio
 [nygard]: https://www.cognitect.com/blog/2011/11/15/documenting-architecture-decisions
