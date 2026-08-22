@@ -31,9 +31,31 @@ resolve_billing_account() {
 
   [[ -t 0 ]] || die "TF_VAR_billing_account_id is unset and stdin is not a terminal"
 
-  gcloud billing accounts list
-  read -r -p "Billing account ID: " TF_VAR_billing_account_id
+  # A closed account cannot be linked, so offering one is a dead end. ID first
+  # in each row: display names contain spaces, IDs do not.
+  local -a accounts=()
+  local account
+  while IFS= read -r account; do
+    accounts+=("${account}")
+  done < <(gcloud billing accounts list --filter=open=true \
+    --format='value[separator=" "](name.basename(), displayName)')
+
+  if ((${#accounts[@]} == 0)); then
+    die "no open billing account available to ${USER}"
+  elif ((${#accounts[@]} == 1)); then
+    TF_VAR_billing_account_id="${accounts[0]%% *}"
+  else
+    local choice
+    PS3="Billing account: "
+    select choice in "${accounts[@]}"; do
+      [[ -n "${choice}" ]] || continue
+      TF_VAR_billing_account_id="${choice%% *}"
+      break
+    done
+  fi
+
   export TF_VAR_billing_account_id
+  echo "Using billing account ${TF_VAR_billing_account_id}"
 }
 
 ensure_project() {
