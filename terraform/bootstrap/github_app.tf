@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT
 
 resource "google_project_service" "secretmanager" {
-  project = google_project.org.project_id
+  project = google_project.infrastructure.project_id
   service = "secretmanager.googleapis.com"
 
   disable_on_destroy = false
@@ -16,7 +16,7 @@ resource "google_project_service" "secretmanager" {
 resource "google_secret_manager_secret" "github_app" {
   for_each = local.github_app_secrets
 
-  project   = google_project.org.project_id
+  project   = google_project.infrastructure.project_id
   secret_id = each.value
 
   replication {

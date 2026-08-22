@@ -9,7 +9,7 @@
 # the state that defines the deployers within reach of the credentials it
 # defines — read on every pull request, write on every merge.
 resource "google_storage_bucket" "org_state" {
-  project  = google_project.org.project_id
+  project  = google_project.infrastructure.project_id
   name     = local.org_state_bucket
   location = local.region
 

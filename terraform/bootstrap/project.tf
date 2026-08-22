@@ -5,11 +5,16 @@
 # inside it. Adopting it here keeps billing and labels in code.
 # The import block is idempotent once the project is in state, so it stays.
 import {
-  to = google_project.org
+  to = google_project.infrastructure
   id = local.project_id
 }
 
-resource "google_project" "org" {
+moved {
+  from = google_project.org
+  to   = google_project.infrastructure
+}
+
+resource "google_project" "infrastructure" {
   # There is no GCP organization to group these projects, so the shared "DS"
   # prefix does it in project lists instead.
   name                = "DS Infrastructure"
@@ -32,14 +37,14 @@ resource "google_project" "org" {
 }
 
 resource "google_project_service" "iam" {
-  project = google_project.org.project_id
+  project = google_project.infrastructure.project_id
   service = "iam.googleapis.com"
 
   disable_on_destroy = false
 }
 
 resource "google_project_service" "cloudresourcemanager" {
-  project = google_project.org.project_id
+  project = google_project.infrastructure.project_id
   service = "cloudresourcemanager.googleapis.com"
 
   disable_on_destroy = false
@@ -48,7 +53,7 @@ resource "google_project_service" "cloudresourcemanager" {
 }
 
 resource "google_project_service" "serviceusage" {
-  project = google_project.org.project_id
+  project = google_project.infrastructure.project_id
   service = "serviceusage.googleapis.com"
 
   disable_on_destroy = false
@@ -60,7 +65,7 @@ resource "google_project_service" "serviceusage" {
 # job could read every object in the state bucket and leave no trace beyond
 # the STS impersonation row in Admin Activity.
 resource "google_project_iam_audit_config" "storage" {
-  project = google_project.org.project_id
+  project = google_project.infrastructure.project_id
   service = "storage.googleapis.com"
 
   audit_log_config {

@@ -31,7 +31,7 @@ locals {
 resource "google_secret_manager_secret_iam_member" "deployer_github_app_secrets" {
   for_each = local.deployer_github_app_grants
 
-  project = google_project.org.project_id
+  project = google_project.infrastructure.project_id
 
   # each.value.secret holds the same string; indexing the resource is what
   # orders this grant after the secret it grants on.
