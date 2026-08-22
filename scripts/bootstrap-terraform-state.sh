@@ -21,7 +21,7 @@ die() {
 check_preconditions() {
   command -v gcloud >/dev/null || die "gcloud not found in PATH"
   [[ -n "${TF_VAR_billing_account_id:-}" ]] ||
-    die "TF_VAR_billing_account_id is unset; see docs/how-to/bootstrap.md"
+    die "TF_VAR_billing_account_id is unset; see README.md"
 }
 
 ensure_project() {
