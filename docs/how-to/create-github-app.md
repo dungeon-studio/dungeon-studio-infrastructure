@@ -4,9 +4,8 @@
 # Create the GitHub App
 
 The `github` provider in `terraform/org/` authenticates as a GitHub App
-installed on the `dungeon-studio` org. This covers registering that App,
-filling the Secret Manager secrets `just org` reads, and rotating the private
-key.
+installed on the `dungeon-studio` org. This registers that App and stores its
+credentials where `just org` reads them.
 
 You need an owner role in the org and permission to add secret versions in
 the `dungeon-studio-infrastructure` project.
@@ -64,13 +63,9 @@ the `dungeon-studio-infrastructure` project.
 just bootstrap
 ```
 
-It creates the three secrets, then asks for the App ID, the installation ID,
-and a path to the `.pem`. Export `GITHUB_APP_ID`,
-`GITHUB_APP_INSTALLATION_ID`, and `GITHUB_APP_PRIVATE_KEY_PATH` beforehand to
-skip the prompts. The run then needs no terminal.
-
-It skips any secret that already holds a value, so an earlier bootstrap does
-not get in the way.
+Export `GITHUB_APP_ID`, `GITHUB_APP_INSTALLATION_ID`, and
+`GITHUB_APP_PRIVATE_KEY_PATH` beforehand to answer the prompts without a
+terminal.
 
 Then destroy the downloaded key:
 
@@ -84,38 +79,4 @@ shred --remove ~/Downloads/dungeon-studio-terraform.*.private-key.pem
 just org
 ```
 
-The apply prints `github_organization_id`. Reaching it means the App minted
-an installation token and GitHub accepted it.
-
-## Rotate the private key
-
-An App holds two private keys at once, so the replacement works before the
-old key goes away. `just bootstrap` leaves a populated secret alone, so this
-goes through `gcloud`.
-
-1. Generate a second private key under **Private keys** on the App's
-   General tab.
-
-2. Add it as a new secret version:
-
-   ```sh
-   gcloud secrets versions add github-app-private-key \
-     --project dungeon-studio-infrastructure \
-     --data-file ~/Downloads/<new-key>.private-key.pem
-   ```
-
-3. Run `just org`. It reads the latest version, so a successful apply is the
-   new key working.
-
-4. Delete the old key on the App's General tab.
-
-5. Destroy the superseded secret version, which stays readable until you
-   do:
-
-   ```sh
-   gcloud secrets versions destroy <N> \
-     --secret github-app-private-key \
-     --project dungeon-studio-infrastructure
-   ```
-
-6. Shred the downloaded `.pem`.
+The apply prints `github_organization_id`.

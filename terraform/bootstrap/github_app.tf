@@ -10,9 +10,9 @@ resource "google_project_service" "secretmanager" {
   depends_on = [google_project_service.serviceusage]
 }
 
-# Empty shells. Versions are added out of band — see
-# docs/how-to/create-github-app.md — because a version Terraform created
-# would put the private key in this layer's state.
+# Empty shells. scripts/bootstrap.sh adds the versions once this has applied,
+# because a version Terraform created would put the private key in this
+# layer's state.
 resource "google_secret_manager_secret" "github_app" {
   for_each = local.github_app_secrets
 

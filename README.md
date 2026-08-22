@@ -93,8 +93,10 @@ hold the App's ID, installation ID, and private key but leaves them empty;
 `just bootstrap` prompts for the values, so the key material never reaches a
 state file.
 
-[docs/how-to/create-github-app.md](docs/how-to/create-github-app.md) covers
-registering the App, filling those secrets, and rotating the key.
+[Create the GitHub App](docs/how-to/create-github-app.md) registers it and
+fills those secrets;
+[Rotate the GitHub App's private key](docs/how-to/rotate-github-app-key.md)
+replaces the key afterwards.
 
 ## Contributing
 
