@@ -10,14 +10,14 @@ Proposed
 ## Context
 
 Decisions here outlive the pull requests that make them, and nothing
-in the repository records why they went the way they did. The code
-shows what a decision produced, git shows when it changed and who
-changed it, and the issue tracker shows what was asked for. None of
-them records the alternatives, or what the chosen option cost.
+in the repository records why. The code shows what a decision
+produced, git shows when it changed and who changed it, and the issue
+tracker shows what someone asked for. None of them records the
+alternatives, or what the chosen option cost.
 
 A reader without that cannot tell a weighed decision from a default.
-Settled questions get reopened, and deliberate trade-offs get undone by
-someone who never knew they were trade-offs.
+Settled questions get reopened, and trade-offs get undone by someone
+who never knew they were trade-offs.
 
 ## Decision
 
@@ -34,15 +34,19 @@ means writing a new record and marking the old one
 `Superseded by NNNN`.
 
 A decision earns a record when it is architecturally significant and
-hard to reverse: it locks in a vendor or dependency, sets a precedent
-later work follows, or picks between alternatives a reader would
-otherwise have to re-evaluate. Everything else belongs in a commit
-message.
+hard to reverse:
+
+- it locks in a vendor or dependency,
+- it sets a precedent later work follows, or
+- it picks between alternatives a reader would otherwise have to
+  re-evaluate.
+
+Everything else belongs in a commit message.
 
 ## Consequences
 
-The reasoning behind a standing decision sits beside the decision, so
-a reader reaches it without excavating git history or the tracker.
+A reader reaches the reasoning behind a standing decision without
+reading git history or the tracker.
 
 The [genshin.dungeon.studio repository][genshin-repo] records this
 class of decision as numbered explanation documents under

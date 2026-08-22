@@ -44,15 +44,13 @@ No option satisfies all four.
 
 ## Decision Outcome
 
-Chosen: **Cloudflare Email Routing**, because it is the only option
-that keeps the destination out of public DNS and the configuration in a
-maintained Terraform provider at no recurring cost. It is also the only
-option that moves the apex off Cloud DNS to do so.
+Chosen option: **Cloudflare Email Routing**. It is the only option
+meeting drivers 1, 2, and 4, and the only one that requires moving the
+apex.
 
 The `genshin.dungeon.studio` zone stays in the [repository of the same
-name][genshin-repo]. The apex zone carries the NS delegation as
-Cloudflare records, and that repository keeps ownership of the
-subdomain.
+name][genshin-repo]. The apex carries its NS delegation as Cloudflare
+records.
 
 ### Consequences
 
@@ -62,9 +60,9 @@ subdomain.
 - Bad, because it fails driver 3. The org layer now spans two providers
   and two credentials, and a Cloudflare API token joins the GCP
   credentials that `just bootstrap` provisions and rotates. DNS
-  problems gain a second place to look. The existing Cloudflare account
-  absorbs part of that cost. The token, the provider version, and the
-  split surface remain.
+  problems gain a second place to look. The existing account absorbs
+  part of that cost, but not the token, the provider version, or the
+  split surface.
 - Bad, because moving authority is a one-time risk to a live site. The
   DNSSEC chain stays broken until Cloudflare's DS record replaces the
   one at `.studio`, and the zone's existing records have to answer from
@@ -88,7 +86,7 @@ validates again from `.studio`.
 
 ### Cloudflare Email Routing
 
-- Good, because forwarding to a verified destination costs nothing, at
+- Good, because forwarding to a verified destination is free, with
   [200 destination addresses per account and 200 routing rules per
   domain][limits].
 - Good, because the configuration is Terraform-managed through
