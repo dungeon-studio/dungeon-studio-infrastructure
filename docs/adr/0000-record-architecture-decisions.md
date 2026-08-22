@@ -48,11 +48,7 @@ Everything else belongs in a commit message.
 A reader reaches the reasoning behind a standing decision without
 reading git history or the tracker.
 
-The [genshin.dungeon.studio repository][genshin-repo] records this
-class of decision as numbered explanation documents under
-`docs/explanation/`. With two templates here, the organization now has
-three shapes for the same kind of document. A cross-repository
-reference has to say which it points at.
+Every record now starts with a template choice.
 
 Recording a decision costs a document, so the practice decays if it
 covers tactical choices.
@@ -63,6 +59,5 @@ covers tactical choices.
   single-decision format.
 - [MADR][madr] — the comparison format.
 
-[genshin-repo]: https://github.com/dungeon-studio/genshin.dungeon.studio
 [madr]: https://adr.github.io/madr/
 [nygard]: https://www.cognitect.com/blog/2011/11/15/documenting-architecture-decisions
