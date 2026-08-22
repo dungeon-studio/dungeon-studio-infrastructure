@@ -10,7 +10,7 @@ import {
 }
 
 resource "google_project" "org" {
-  name                = "Dungeon Studio Org"
+  name                = "Dungeon Studio Infrastructure"
   project_id          = local.project_id
   auto_create_network = false
   billing_account     = var.billing_account_id

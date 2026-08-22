@@ -37,7 +37,7 @@ command is the whole local setup.
 
 Two recipes make up the operator surface:
 
-- `just bootstrap` — creates the `dungeon-studio-org` project, the
+- `just bootstrap` — creates the `dungeon-studio-infrastructure` project, the
   `dungeon-studio-tfstate` state bucket, the Workload Identity Federation pool,
   and the deployer service accounts. Run it once per machine, or to rotate
   those credentials.
