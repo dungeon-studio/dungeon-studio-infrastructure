@@ -9,9 +9,9 @@ Proposed
 
 ## Context
 
-The product monorepo carries draft privacy policy and terms of service
-pages ([genshin.dungeon.studio#647][647]). The privacy page records
-that it needs a dedicated contact address before the 1.0.0 tag.
+The [monorepo] carries draft privacy policy and terms of service pages
+([genshin.dungeon.studio#647][647]). The privacy page records that it
+needs a dedicated contact address before the 1.0.0 tag.
 `privacy@dungeon.studio` is an apex-domain address, so whatever
 delivers it constrains the apex zone.
 
@@ -19,8 +19,8 @@ The apex is already authoritative on Google Cloud DNS
 (`ns-cloud-d1..d4.googledomains.com`), and DNSSEC-signed with a DS
 record published at `.studio`. It answers with Squarespace A records.
 It delegates `genshin.dungeon.studio` by NS to a second Cloud DNS zone
-that the product monorepo's `core` environment owns. None of it is
-under Terraform here yet.
+that the monorepo's `core` environment owns. None of it is under
+Terraform here yet.
 
 Four requirements:
 
@@ -69,9 +69,9 @@ We will make Cloudflare authoritative for the apex `dungeon.studio`
 zone, and manage that zone and its Email Routing configuration from
 `terraform/org/` with the Cloudflare provider.
 
-`genshin.dungeon.studio` stays with the product monorepo. The apex zone
-carries the NS delegation as Cloudflare records. The monorepo keeps
-ownership of the subdomain.
+`genshin.dungeon.studio` stays with the monorepo. The apex zone carries
+the NS delegation as Cloudflare records. The monorepo keeps ownership of
+the subdomain.
 
 ## Consequences
 
@@ -118,4 +118,5 @@ neither fixes nor worsens this.
 [enable]: https://developers.cloudflare.com/email-routing/get-started/enable-email-routing/
 [improvmx-tf]: https://github.com/issyl0/terraform-provider-improvmx
 [limits]: https://developers.cloudflare.com/email-routing/limits/
+[monorepo]: https://github.com/dungeon-studio/genshin.dungeon.studio
 [partial]: https://developers.cloudflare.com/dns/zone-setups/partial-setup/
