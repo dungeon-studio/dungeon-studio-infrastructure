@@ -3,7 +3,7 @@
 
 variable "billing_account_id" {
   type        = string
-  description = "Billing account to attach to the org project. Lives in bootstrap so the deployer service accounts never need billing permissions."
+  description = "Billing account to attach to the project. Lives in bootstrap so the deployer service accounts never need billing permissions."
 
   validation {
     condition     = can(regex("^[0-9A-Z]{6}-[0-9A-Z]{6}-[0-9A-Z]{6}$", var.billing_account_id))

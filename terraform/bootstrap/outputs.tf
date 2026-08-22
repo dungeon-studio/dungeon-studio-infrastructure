@@ -2,20 +2,20 @@
 # SPDX-License-Identifier: MIT
 
 output "project_id" {
-  value       = google_project.org.project_id
-  description = "Org GCP project ID"
+  value       = google_project.infrastructure.project_id
+  description = "GCP project ID for this repository's infrastructure"
   sensitive   = false
 }
 
 output "project_number" {
-  value       = google_project.org.number
-  description = "Org GCP project number, needed to build principalSet identifiers"
+  value       = google_project.infrastructure.number
+  description = "GCP project number, needed to build principalSet identifiers"
   sensitive   = false
 }
 
 output "state_bucket" {
-  value       = data.google_storage_bucket.state.name
-  description = "GCS bucket holding Terraform state for every layer in this repository"
+  value       = data.google_storage_bucket.bootstrap_state.name
+  description = "GCS bucket holding this layer's Terraform state"
   sensitive   = false
 }
 

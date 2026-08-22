@@ -4,32 +4,54 @@
 locals {
   deployers = {
     ro = {
-      service_account_id = google_service_account.github_deployer_ro.name
-      email              = google_service_account.github_deployer_ro.email
-      state_bucket_role  = "roles/storage.objectViewer"
-      principal          = local.wif_principal_any_ref
+      service_account_id        = google_service_account.github_deployer_ro.name
+      email                     = google_service_account.github_deployer_ro.email
+      infrastructure_state_role = "roles/storage.objectViewer"
+      principal                 = local.wif_principal_any_ref
     }
     rw = {
-      service_account_id = google_service_account.github_deployer_rw.name
-      email              = google_service_account.github_deployer_rw.email
-      state_bucket_role  = "roles/storage.objectAdmin"
-      principal          = local.wif_principal_develop
+      service_account_id        = google_service_account.github_deployer_rw.name
+      email                     = google_service_account.github_deployer_rw.email
+      infrastructure_state_role = "roles/storage.objectAdmin"
+      principal                 = local.wif_principal_develop
     }
   }
+
+  deployer_github_app_grants = {
+    for pair in setproduct(keys(local.deployers), local.github_app_secrets) :
+    "${pair[0]}-${pair[1]}" => {
+      email  = local.deployers[pair[0]].email
+      secret = pair[1]
+    }
+  }
+}
+
+# Plan authenticates the github provider too, so read access is not the
+# applier's alone.
+resource "google_secret_manager_secret_iam_member" "deployer_github_app_secrets" {
+  for_each = local.deployer_github_app_grants
+
+  project = google_project.infrastructure.project_id
+
+  # each.value.secret holds the same string; indexing the resource is what
+  # orders this grant after the secret it grants on.
+  secret_id = google_secret_manager_secret.github_app[each.value.secret].secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${each.value.email}"
 }
 
 resource "google_storage_bucket_iam_member" "deployer_state_objects" {
   for_each = local.deployers
 
-  bucket = data.google_storage_bucket.state.name
-  role   = each.value.state_bucket_role
+  bucket = google_storage_bucket.infrastructure_state.name
+  role   = each.value.infrastructure_state_role
   member = "serviceAccount:${each.value.email}"
 }
 
 resource "google_storage_bucket_iam_member" "deployer_state_bucket_reader" {
   for_each = local.deployers
 
-  bucket = data.google_storage_bucket.state.name
+  bucket = google_storage_bucket.infrastructure_state.name
   role   = "roles/storage.legacyBucketReader"
   member = "serviceAccount:${each.value.email}"
 }

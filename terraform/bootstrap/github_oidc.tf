@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT
 
 resource "google_project_service" "sts" {
-  project = google_project.org.project_id
+  project = google_project.infrastructure.project_id
   service = "sts.googleapis.com"
 
   disable_on_destroy = false
@@ -11,7 +11,7 @@ resource "google_project_service" "sts" {
 }
 
 resource "google_project_service" "iam_credentials" {
-  project = google_project.org.project_id
+  project = google_project.infrastructure.project_id
   service = "iamcredentials.googleapis.com"
 
   disable_on_destroy = false
@@ -20,7 +20,7 @@ resource "google_project_service" "iam_credentials" {
 }
 
 resource "google_iam_workload_identity_pool" "github" {
-  project                   = google_project.org.project_id
+  project                   = google_project.infrastructure.project_id
   workload_identity_pool_id = "github"
   display_name              = "GitHub Actions"
   description               = "Workload Identity Pool for GitHub Actions"
@@ -32,7 +32,7 @@ resource "google_iam_workload_identity_pool" "github" {
 # Each dungeon-studio repository keeps its own pool, so a token minted for one
 # cannot reach another's state.
 resource "google_iam_workload_identity_pool_provider" "github" {
-  project                            = google_project.org.project_id
+  project                            = google_project.infrastructure.project_id
   workload_identity_pool_id          = google_iam_workload_identity_pool.github.workload_identity_pool_id
   workload_identity_pool_provider_id = "github-provider"
   display_name                       = "GitHub"
@@ -56,7 +56,7 @@ resource "google_iam_workload_identity_pool_provider" "github" {
 }
 
 locals {
-  wif_pool = "projects/${google_project.org.number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.github.workload_identity_pool_id}"
+  wif_pool = "projects/${google_project.infrastructure.number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.github.workload_identity_pool_id}"
 
   # Plan runs on pull requests, so no branch pins this one and
   # attribute_condition is its only bound.
