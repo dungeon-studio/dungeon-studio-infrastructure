@@ -5,10 +5,10 @@
 extends: default
 
 rules:
-  # SHA-pinned GitHub Actions (e.g. `uses: org/repo@<40-char-sha> # vN`)
-  # exceed the 80-char default but cannot be wrapped.
+  # SHA pins (`uses: org/repo@<sha> # vN`) and single-line `# renovate:`
+  # version comments cannot be wrapped. 120 matches the product monorepo.
   line-length:
-    max: 100
+    max: 120
   # Renovate writes a single space before its trailing version comment
   # (e.g. `... # v4`); accept that style.
   comments:
