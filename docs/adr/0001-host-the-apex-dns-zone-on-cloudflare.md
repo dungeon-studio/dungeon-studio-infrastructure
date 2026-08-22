@@ -7,13 +7,12 @@
 
 Proposed
 
-## Context
+## Context and Problem Statement
 
 The [genshin.dungeon.studio repository][genshin-repo] carries draft
 privacy policy and terms of service pages ([#647][647]). The privacy
 page records that it needs a dedicated contact address before the 1.0.0
-tag.
-`privacy@dungeon.studio` is an apex-domain address, so whatever
+tag. `privacy@dungeon.studio` is an apex-domain address, so whatever
 delivers it constrains the apex zone.
 
 The apex is already authoritative on Google Cloud DNS
@@ -24,7 +23,7 @@ owned by the `core` environment of the
 [genshin.dungeon.studio repository][genshin-repo]. None of it is under
 Terraform here yet.
 
-Four requirements:
+## Decision Drivers
 
 1. Every piece of configuration lives in Terraform.
 2. The forwarding destination stays out of public DNS. An address that
@@ -37,84 +36,103 @@ Four requirements:
 
 No option satisfies all four.
 
-**Cloudflare Email Routing** forwards to a verified destination at no
-cost, allowing 200 destination addresses per account and 200 routing
-rules per domain. The configuration is Terraform-managed through
-`cloudflare_email_routing_settings`, `_address`, `_rule`, and `_dns` in
-provider v5. It requires Cloudflare to be authoritative for the zone. A
-[partial CNAME setup][partial] does not serve it. Choosing it moves the
-apex off Cloud DNS.
+## Considered Options
 
-**ForwardEmail on Cloud DNS** needs only MX and TXT records, so the
-apex stays where it is and the records are ordinary
-`google_dns_record_set` resources. On the free tier the forwarding rule
-*is* a public TXT record, so `privacy@` would publish the address it
-exists to hide. Hiding it needs a paid plan. The free tier fails
-requirement 2; the paid tier fails requirement 4.
+- Cloudflare Email Routing
+- ForwardEmail on Cloud DNS
+- ImprovMX on Cloud DNS
 
-**ImprovMX on Cloud DNS** keeps the destination out of DNS and the apex
-where it is. It needs no cutover, and the zone carries only MX and SPF
-records. Its Terraform provider is a community project [archived in
-February 2026][improvmx-tf], so requirement 1 holds only while an
-unmaintained project keeps working. Nothing else here uses ImprovMX, so
-requirement 3 counts it as a new vendor rather than a second zone under
-an existing one.
+## Decision Outcome
 
-Cloudflare is already a vendor here. The account
-`alunduil-infrastructure` runs `alunduil.com` on the free plan,
-migrated off these same Cloud DNS nameservers. Adding the apex costs a
-zone and a token scoped to it, not a new vendor relationship.
-
-## Decision
-
-We will make Cloudflare authoritative for the apex `dungeon.studio`
-zone, and manage that zone and its Email Routing configuration from
-`terraform/org/` with the Cloudflare provider.
+Chosen: **Cloudflare Email Routing**, because it is the only option
+that keeps the destination out of public DNS and the configuration in a
+maintained Terraform provider at no recurring cost. It is also the only
+option that moves the apex off Cloud DNS to do so.
 
 The `genshin.dungeon.studio` zone stays in the [repository of the same
 name][genshin-repo]. The apex zone carries the NS delegation as
 Cloudflare records, and that repository keeps ownership of the
 subdomain.
 
-## Consequences
+### Consequences
 
-`privacy@dungeon.studio` becomes a Terraform resource at no recurring
-cost with no personal address in public DNS, satisfying requirements 1,
-2, and 4.
+- Good, because `privacy@dungeon.studio` becomes a Terraform resource
+  at no recurring cost with no personal address in public DNS, which
+  satisfies drivers 1, 2, and 4.
+- Bad, because it fails driver 3. The org layer now spans two providers
+  and two credentials, and a Cloudflare API token joins the GCP
+  credentials that `just bootstrap` provisions and rotates. DNS
+  problems gain a second place to look. The existing Cloudflare account
+  absorbs part of that cost. The token, the provider version, and the
+  split surface remain.
+- Bad, because the cutover is a one-time risk to a live site. Moving
+  authority means disabling DNSSEC at the Squarespace registrar,
+  repointing the nameservers, and re-enabling DNSSEC with Cloudflare's
+  DS record. The zone is unsigned between those steps. Run them out of
+  order and it becomes unresolvable. The Squarespace A records, the
+  `www` CNAME, and the `genshin` NS delegation all have to exist in
+  Cloudflare, unproxied, before the nameservers change.
+- Neutral, because Cloudflare's proxy, WAF, and redirect rules become
+  reachable at the apex. Nothing here needs them, and enabling them
+  later is its own decision.
+- Neutral, because the `genshin.dungeon.studio` delegation stays
+  insecure. Its repository signs the zone, but the apex publishes no DS
+  record for it, so the chain of trust already breaks at the
+  delegation. Moving the apex neither fixes nor worsens this.
 
-It fails requirement 3. The org layer now spans two providers and two
-credentials, and a Cloudflare API token joins the GCP credentials that
-`just bootstrap` provisions and rotates. DNS problems gain a second
-place to look. The existing Cloudflare account absorbs part of that
-cost. The token, the provider version, and the split surface remain.
+### Confirmation
 
-The cutover is a one-time risk to a live site. Moving authority
-means disabling DNSSEC at the Squarespace registrar, repointing the
-nameservers, and re-enabling DNSSEC with Cloudflare's DS record. The
-zone is unsigned between those steps. Run them out of order and it
-becomes unresolvable. The Squarespace A records, the `www` CNAME, and
-the `genshin` NS delegation all have to exist in Cloudflare, unproxied,
-before the nameservers change.
+The zone, its records, and the Email Routing configuration all live in
+`terraform/org/`. `dig` shows Cloudflare nameservers for the apex, an
+unchanged NS set for `genshin.dungeon.studio`, and a DNSSEC chain that
+validates again from `.studio`.
 
-Cloudflare's proxy, WAF, and redirect rules become reachable at the
-apex. Nothing here needs them, and enabling them later is its own
-decision.
+## Pros and Cons of the Options
 
-The `genshin.dungeon.studio` delegation stays insecure. Its repository
-signs the zone, but the apex publishes no DS record for it, so the
-chain of trust already breaks at the delegation. Moving the apex
-neither fixes nor worsens this.
+### Cloudflare Email Routing
 
-## References
+- Good, because forwarding to a verified destination costs nothing, at
+  [200 destination addresses per account and 200 routing rules per
+  domain][limits].
+- Good, because the configuration is Terraform-managed through
+  `cloudflare_email_routing_settings`, `_address`, `_rule`, and `_dns`
+  in provider v5.
+- Good, because the account `alunduil-infrastructure` already runs
+  `alunduil.com` on the free plan, migrated off these same Cloud DNS
+  nameservers. Adding the apex costs a zone and a token scoped to it,
+  not a new vendor relationship.
+- Bad, because it [requires Cloudflare to be authoritative][enable] for
+  the zone. A [partial CNAME setup][partial] does not serve it, so
+  choosing it moves the apex off Cloud DNS.
 
-- [Cloudflare Email Routing: enable][enable] — the full-setup
-  requirement.
-- [Cloudflare Email Routing: limits][limits] — destination and rule
-  counts.
-- [genshin.dungeon.studio#647][647] — the privacy policy and terms of
-  service drafts.
+### ForwardEmail on Cloud DNS
+
+- Good, because it needs only MX and TXT records, so the apex stays
+  where it is and the records are ordinary `google_dns_record_set`
+  resources.
+- Bad, because on the free tier the forwarding rule *is* a public TXT
+  record, so `privacy@` would publish the address it exists to hide.
+  That fails driver 2.
+- Bad, because hiding the destination needs a paid plan, which fails
+  driver 4.
+
+### ImprovMX on Cloud DNS
+
+- Good, because it keeps the destination out of DNS and the apex where
+  it is. It needs no cutover, and the zone carries only MX and SPF
+  records.
+- Bad, because its Terraform provider is a community project [archived
+  in February 2026][improvmx-tf], so driver 1 holds only while an
+  unmaintained project keeps working.
+- Bad, because nothing else here uses ImprovMX, so driver 3 counts it
+  as a new vendor rather than a second zone under an existing one.
+
+## More Information
+
 - [Delegating a subdomain to nameservers outside Cloudflare][delegate] —
   the mechanism the `genshin` NS records use.
+- [genshin.dungeon.studio#647][647] — the privacy policy and terms of
+  service drafts.
 
 [647]: https://github.com/dungeon-studio/genshin.dungeon.studio/issues/647
 [delegate]: https://developers.cloudflare.com/dns/manage-dns-records/how-to/subdomains-outside-cloudflare/

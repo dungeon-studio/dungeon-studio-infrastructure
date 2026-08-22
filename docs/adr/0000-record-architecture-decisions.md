@@ -22,8 +22,11 @@ someone who never knew they were trade-offs.
 ## Decision
 
 We will record architecturally significant decisions as Architecture
-Decision Records under `docs/adr/`, in the format Michael Nygard
-describes.
+Decision Records under `docs/adr/`. A record stating one decision uses
+the format [Michael Nygard describes][nygard]. A record comparing three
+or more options across several drivers uses [MADR][madr], whose
+Considered Options and Pros and Cons sections carry that comparison in
+structure rather than prose.
 
 Each record is `NNNN-kebab-title.md`, numbered from this one and never
 renumbered. A record is immutable once accepted. Changing a decision
@@ -43,16 +46,19 @@ a reader reaches it without excavating git history or the tracker.
 
 The [genshin.dungeon.studio repository][genshin-repo] records this
 class of decision as numbered explanation documents under
-`docs/explanation/`, so the organization now has two shapes for the
-same kind of document. A reference that crosses repositories has to say
-which it points at.
+`docs/explanation/`. With two templates here, the organization now has
+three shapes for the same kind of document. A cross-repository
+reference has to say which it points at.
 
 Recording a decision costs a document, so the practice decays if it
 covers tactical choices.
 
 ## References
 
-- [Documenting Architecture Decisions][nygard], Michael Nygard.
+- [Documenting Architecture Decisions][nygard], Michael Nygard — the
+  single-decision format.
+- [MADR][madr] — the comparison format.
 
 [genshin-repo]: https://github.com/dungeon-studio/genshin.dungeon.studio
+[madr]: https://adr.github.io/madr/
 [nygard]: https://www.cognitect.com/blog/2011/11/15/documenting-architecture-decisions
