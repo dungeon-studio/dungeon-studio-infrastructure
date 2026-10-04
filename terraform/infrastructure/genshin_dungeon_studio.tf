@@ -6,9 +6,10 @@ data "github_app" "actions" {
 }
 
 locals {
-  # Only checks that report on every pull request and fail on the change
-  # alone. A path-gated job never reports on most pull requests, and one that
-  # fails on newly disclosed advisories blocks merges with no change to fix.
+  # A required check must report on every pull request and fail only on what
+  # the pull request changes. Path-gated jobs skip most pull requests, leaving
+  # them pending forever. Dependency scans fail on newly disclosed advisories,
+  # blocking merges that changed nothing.
   genshin_required_checks = [
     "Audit workflows",
     "Build and test workspace",
@@ -25,10 +26,10 @@ locals {
   ]
 }
 
-# A ruleset of its own rather than a rule on "Protect develop branch": the
-# provider cannot express that ruleset's code_quality rule, so managing it
-# would strip the rule on the next apply. GitHub enforces every ruleset that
-# matches a branch.
+# The provider cannot represent every setting on the "Protect develop branch"
+# ruleset, such as its code_quality rule, so managing that ruleset would strip
+# them. GitHub enforces every ruleset that matches a branch, so these checks
+# take a ruleset of their own.
 resource "github_repository_ruleset" "genshin_develop_ci" {
   name        = "Require CI on develop"
   repository  = "genshin.dungeon.studio"
@@ -44,9 +45,9 @@ resource "github_repository_ruleset" "genshin_develop_ci" {
 
   rules {
     required_status_checks {
-      # Requiring up-to-date branches would reset Renovate's
-      # minimumReleaseAge on every rebase, so a dependency pull request is
-      # never both current and aged.
+      # Requiring up-to-date branches makes Renovate rebase whenever develop
+      # moves. Each rebase can pull a newer release and restart its
+      # minimumReleaseAge wait, so the pull request may never merge.
       strict_required_status_checks_policy = false
 
       dynamic "required_check" {
