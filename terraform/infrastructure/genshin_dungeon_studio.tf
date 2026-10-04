@@ -1,11 +1,11 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-locals {
-  # Pinning each check to GitHub Actions stops another app from satisfying it
-  # by reporting under the same name.
-  github_actions_app_id = 15368
+data "github_app" "actions" {
+  slug = "github-actions"
+}
 
+locals {
   # Only checks that report on every pull request and fail on the change
   # alone. A path-gated job never reports on most pull requests, and one that
   # fails on newly disclosed advisories blocks merges with no change to fix.
@@ -52,8 +52,10 @@ resource "github_repository_ruleset" "genshin_develop_ci" {
       dynamic "required_check" {
         for_each = local.genshin_required_checks
         content {
-          context        = required_check.value
-          integration_id = local.github_actions_app_id
+          context = required_check.value
+          # Stops another app from satisfying the check by reporting under
+          # the same name.
+          integration_id = data.github_app.actions.id
         }
       }
     }
