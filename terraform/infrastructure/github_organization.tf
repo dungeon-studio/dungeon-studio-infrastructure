@@ -24,9 +24,8 @@ resource "github_actions_organization_permissions" "org" {
     github_owned_allowed = true
     verified_allowed     = true
 
-    # GitHub matches a pattern against the ref as written, so `@v6` rejects a
-    # SHA pin of that same release. `@*` admits the SHA pins Renovate keeps
-    # current; a tag pattern would only admit the mutable reference.
+    # `@*` lets workflows pin actions by SHA. GitHub matches a pattern against
+    # the ref as written, so `@v6` would reject a SHA pin of v6.
     patterns_allowed = [
       "actions/cache@*",
       "amannn/action-semantic-pull-request@*",
