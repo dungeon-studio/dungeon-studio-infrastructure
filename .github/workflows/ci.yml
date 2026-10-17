@@ -34,7 +34,7 @@ jobs:
       # renovate: datasource=github-releases depName=casey/just
       JUST_VERSION: '1.58.0'
       # renovate: datasource=github-releases depName=hashicorp/terraform extractVersion=^v(?<version>.+)$
-      TERRAFORM_VERSION: '1.16.5'
+      TERRAFORM_VERSION: '1.16.6'
       # renovate: datasource=github-releases depName=aquasecurity/trivy extractVersion=^v(?<version>.+)$
       TRIVY_VERSION: '0.75.0'
 
