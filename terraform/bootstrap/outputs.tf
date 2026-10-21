@@ -20,19 +20,19 @@ output "state_bucket" {
 }
 
 output "workload_identity_provider" {
-  value       = google_iam_workload_identity_pool_provider.github.name
+  value       = local.published_outputs.workload_identity_provider
   description = "GitHub WIF provider, for google-github-actions/auth's workload_identity_provider input"
   sensitive   = false
 }
 
 output "github_deployer_ro_email" {
-  value       = google_service_account.github_deployer_ro.email
+  value       = local.published_outputs.github_deployer_ro_email
   description = "Email of the read-only deployer service account (terraform plan)"
   sensitive   = false
 }
 
 output "github_deployer_rw_email" {
-  value       = google_service_account.github_deployer_rw.email
+  value       = local.published_outputs.github_deployer_rw_email
   description = "Email of the read-write deployer service account (terraform apply)"
   sensitive   = false
 }
