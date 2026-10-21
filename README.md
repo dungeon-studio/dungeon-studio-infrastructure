@@ -83,10 +83,10 @@ The recipe lists your billing accounts and prompts for the one to attach. Set
 `TF_VAR_billing_account_id` beforehand to skip the prompt; the run then needs
 no terminal.
 
-Every step is idempotent, so a partial failure is safe to re-run. Afterwards
-`terraform -chdir=terraform/bootstrap output` prints the federation provider
-and deployer service account emails that GitHub Actions workflows authenticate
-with.
+Every step is idempotent, so a partial failure is safe to re-run. Bootstrap
+publishes the federation provider and deployer service account emails to the
+infrastructure layer's state bucket, and `just infrastructure` sets them as
+Actions variables for the workflows to authenticate with.
 
 ## Register the GitHub App
 

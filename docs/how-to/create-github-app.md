@@ -27,6 +27,8 @@ the `dungeon-studio-infrastructure` project.
    - **Repository → Administration**, read and write: repositories, their
      settings, and repository rulesets.
    - **Repository → Issues**, read and write: the shared label set.
+   - **Repository → Variables**, read and write: the Actions variables CI
+     authenticates to GCP with.
    - **Organization → Administration**, read and write: org settings, org
      rulesets, and the Actions allowlist.
    - **Organization → Members**, read and write: teams and their
