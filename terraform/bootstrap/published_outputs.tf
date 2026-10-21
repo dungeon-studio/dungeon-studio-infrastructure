@@ -1,10 +1,9 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-# terraform/infrastructure/ consumes a few of this layer's values, but the
-# deployers hold no read on this layer's state, and terraform_remote_state
-# would need it. Republish the non-secret values beside the infrastructure
-# layer's state, which the deployers already read.
+# terraform/infrastructure/ reads these values here because the deployers
+# cannot read this layer's state, which terraform_remote_state needs. Plan on
+# any pull request can read this object, so publish only non-secret values.
 locals {
   published_outputs = {
     workload_identity_provider = google_iam_workload_identity_pool_provider.github.name

@@ -1,8 +1,8 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-# Variables rather than secrets: none of these is secret, and a variable stays
-# readable in workflow logs when federation fails.
+# None of these is secret. Actions masks secrets in workflow logs, and these
+# values are what a failed federation needs read back.
 resource "github_actions_variable" "gcp_deployer" {
   for_each = {
     GCP_WORKLOAD_IDENTITY_PROVIDER = local.bootstrap.workload_identity_provider
