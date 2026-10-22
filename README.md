@@ -43,8 +43,10 @@ Three recipes make up the operator surface:
   credentials the infrastructure layer authenticates with. Run it once per
   machine, or to rotate the deployer credentials.
 - `just infrastructure` — local `terraform apply` against the infrastructure
-  layer, run after merging to `develop`. It reads the GitHub App credentials
-  out of Secret Manager, so register the App before the first run.
+  layer, for when continuous integration cannot apply it: the first run after
+  bootstrap, or a broken workflow. Merging to `develop` applies this layer
+  otherwise. It reads the GitHub App credentials out of Secret Manager, so
+  register the App before the first run.
 - `just configure-hook-fix` — writes the hook-fix App's credentials to the
   repositories Renovate automerges. Run it after registering the App or
   rotating its key.
@@ -55,7 +57,7 @@ Terraform splits into two layers on credentials and blast radius rather than
 on provider. `terraform/bootstrap/` runs rarely, with elevated human
 credentials, and provisions the state backend; `terraform/infrastructure/`
 holds the steady-state org configuration, consumes what bootstrap produced,
-and is applied after each merge.
+and is applied by continuous integration on each merge to `develop`.
 
 Each layer stores state in its own bucket: `dungeon-studio-tfstate` for
 bootstrap, `dungeon-studio-infrastructure-tfstate` for the infrastructure
