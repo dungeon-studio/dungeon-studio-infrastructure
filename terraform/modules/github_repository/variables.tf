@@ -24,43 +24,6 @@ variable "topics" {
   description = "GitHub topics applied to the repository."
 }
 
-variable "visibility" {
-  type        = string
-  default     = "public"
-  description = <<-EOT
-    "public" or "private". The org is on GitHub Free, where a private
-    repository cannot have rulesets, so a private repository also needs
-    rulesets = false.
-  EOT
-
-  validation {
-    condition     = contains(["public", "private"], var.visibility)
-    error_message = "visibility must be \"public\" or \"private\"."
-  }
-}
-
-variable "git_flow" {
-  type        = bool
-  default     = true
-  description = <<-EOT
-    Follow Git flow: develop integrates feature work, main holds releases,
-    and only release/* and hotfix/* pull requests merge into main. Creates
-    main, makes every pull request merge with a merge commit, and protects
-    main and release/** alongside develop. Set false only to keep a
-    squash-only repository without a main branch unchanged until it adopts
-    Git flow.
-  EOT
-}
-
-variable "rulesets" {
-  type        = bool
-  default     = true
-  description = <<-EOT
-    Manage this module's branch and tag rulesets. Set false only to keep a
-    repository's hand-made rulesets unchanged until it adopts these.
-  EOT
-}
-
 variable "required_status_checks" {
   type = object({
     ci_results_check = optional(bool, false)
@@ -125,30 +88,10 @@ variable "renovate_automerge" {
   }
 }
 
-variable "allow_auto_merge" {
-  type        = bool
-  default     = false
-  description = <<-EOT
-    Enable GitHub auto-merge without renovate_automerge's rulesets.
-    renovate_automerge already enables it; set this only to keep a
-    repository's existing setting until it adopts renovate_automerge.
-  EOT
-}
-
 variable "has_discussions" {
   type        = bool
   default     = false
   description = "Enable GitHub Discussions on the repository."
-}
-
-variable "template" {
-  type = object({
-    owner                = string
-    repository           = string
-    include_all_branches = optional(bool, false)
-  })
-  default     = null
-  description = "Template repository to seed this one from. Only meaningful at create time."
 }
 
 variable "environments" {
@@ -168,50 +111,41 @@ variable "environments" {
   EOT
 }
 
-variable "pages" {
+variable "legacy" {
   type = object({
-    cname          = optional(string)
-    build_type     = optional(string, "workflow")
-    https_enforced = optional(bool)
+    squash_only                      = optional(bool, false)
+    hand_made_rulesets               = optional(bool, false)
+    allow_auto_merge                 = optional(bool, false)
+    allowed_action_patterns          = optional(list(string))
+    can_approve_pull_request_reviews = optional(bool, false)
+    dependabot_security_updates      = optional(bool, false)
   })
-  default     = null
+  default     = {}
+  nullable    = false
   description = <<-EOT
-    Enable GitHub Pages with the given CNAME, build_type, and HTTPS
-    enforcement. A "legacy" build publishes the release branch: main
-    under git_flow, develop otherwise. https_enforced can only be set true
-    once GitHub has issued the Let's Encrypt cert (auto-provisioned
-    shortly after the apex CNAME resolves); for first-time setup, tick
-    "Enforce HTTPS" in Settings → Pages once the cert is ready and
-    subsequent applies will treat the flag as a no-op confirmation.
-  EOT
-}
+    Settings a repository kept from before Terraform managed it, each
+    holding it back from an org default until it adopts that default.
+    A repository on every default omits this.
 
-variable "allowed_action_patterns" {
-  type        = list(string)
-  default     = null
-  description = <<-EOT
-    Narrow the actions this repository may run to GitHub-owned actions,
-    verified Marketplace creators, and these owner/repo@* patterns. Omit
-    to defer to the org allowlist. Set only to keep a repository's
-    existing list until it moves to the org allowlist.
-  EOT
-}
+    squash_only: no main branch and squash merges only, instead of Git
+    flow. Git flow has develop integrate feature work and main hold
+    releases, merges every pull request with a merge commit, and
+    protects main and release/** alongside develop.
 
-variable "can_approve_pull_request_reviews" {
-  type        = bool
-  default     = false
-  description = <<-EOT
-    Let workflows' GITHUB_TOKEN create and approve pull requests. Set true
-    only to keep a repository's existing setting until it adopts the
-    default.
-  EOT
-}
+    hand_made_rulesets: leave the repository's own rulesets in place of
+    this module's branch and tag rulesets.
 
-variable "dependabot_security_updates" {
-  type        = bool
-  default     = false
-  description = <<-EOT
-    Let Dependabot open security fix pull requests. Set true only to keep
-    a repository's existing setting until it adopts the default.
+    allow_auto_merge: GitHub auto-merge without renovate_automerge's
+    rulesets.
+
+    allowed_action_patterns: a repository-level action allowlist,
+    narrowing the org's, of GitHub-owned actions, verified Marketplace
+    creators, and these owner/repo@* patterns.
+
+    can_approve_pull_request_reviews: workflows' GITHUB_TOKEN may create
+    and approve pull requests.
+
+    dependabot_security_updates: Dependabot opens security fix pull
+    requests.
   EOT
 }

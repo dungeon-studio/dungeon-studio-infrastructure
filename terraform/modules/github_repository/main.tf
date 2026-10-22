@@ -2,13 +2,36 @@
 # SPDX-License-Identifier: MIT
 
 locals {
-  default_branch = "develop"
-  release_branch = "main"
+  develop_branch = "develop"
+  main_branch    = "main"
+  rulesets       = !var.legacy.hand_made_rulesets
+
+  # Literal refs rather than ~DEFAULT_BRANCH, which would carry develop's
+  # rules onto another branch if the default ever moved.
+  develop_refs = ["refs/heads/${local.develop_branch}"]
+
+  # Git flow takes a merge commit on every edge. A squashed release shares no
+  # ancestry with develop, so later releases re-present its changes as
+  # conflicts. Release branches carry a release to main, so they take main's
+  # protections.
+  flow = var.legacy.squash_only ? {
+    branches       = []
+    merge_methods  = ["squash"]
+    linear_history = true
+    release_refs   = []
+    } : {
+    branches       = [local.main_branch]
+    merge_methods  = ["merge"]
+    linear_history = false
+    release_refs   = ["refs/heads/${local.main_branch}", "refs/heads/release/**"]
+  }
+
+  protected_refs = concat(local.develop_refs, local.flow.release_refs)
 }
 
-# Public is the org default. Dependabot alerts come from the org's enforced
-# code security configuration, which the provider cannot override per
-# repository.
+# Public because the org is on GitHub Free, where a private repository cannot
+# have rulesets. Dependabot alerts come from the org's enforced code security
+# configuration, which the provider cannot override per repository.
 #trivy:ignore:GIT-0001
 #trivy:ignore:GIT-0003
 resource "github_repository" "this" {
@@ -17,18 +40,15 @@ resource "github_repository" "this" {
   homepage_url = var.homepage_url
   topics       = var.topics
 
-  visibility      = var.visibility
-  has_issues      = true
-  has_projects    = false
-  has_wiki        = false
-  has_discussions = var.has_discussions
-  # Git flow takes a merge commit on every edge. A squashed release shares no
-  # ancestry with develop, so later releases re-present its changes as
-  # conflicts.
-  allow_merge_commit          = var.git_flow
-  allow_squash_merge          = !var.git_flow
+  visibility                  = "public"
+  has_issues                  = true
+  has_projects                = false
+  has_wiki                    = false
+  has_discussions             = var.has_discussions
+  allow_merge_commit          = contains(local.flow.merge_methods, "merge")
+  allow_squash_merge          = contains(local.flow.merge_methods, "squash")
   allow_rebase_merge          = false
-  allow_auto_merge            = var.renovate_automerge || var.allow_auto_merge
+  allow_auto_merge            = var.renovate_automerge || var.legacy.allow_auto_merge
   allow_update_branch         = true
   squash_merge_commit_title   = "PR_TITLE"
   squash_merge_commit_message = "PR_BODY"
@@ -36,39 +56,31 @@ resource "github_repository" "this" {
   merge_commit_message        = "PR_TITLE"
   delete_branch_on_merge      = true
   archive_on_destroy          = true
-
-  dynamic "template" {
-    for_each = var.template != null ? [var.template] : []
-    content {
-      owner                = template.value.owner
-      repository           = template.value.repository
-      include_all_branches = template.value.include_all_branches
-    }
-  }
 }
 
 resource "github_branch_default" "this" {
   repository = github_repository.this.name
-  branch     = local.default_branch
+  branch     = local.develop_branch
 }
 
-resource "github_branch" "release" {
-  count = var.git_flow ? 1 : 0
+resource "github_branch" "long_lived" {
+  for_each = toset(local.flow.branches)
 
   repository    = github_repository.this.name
-  branch        = local.release_branch
-  source_branch = local.default_branch
+  branch        = each.key
+  source_branch = local.develop_branch
 
   depends_on = [github_branch_default.this]
 }
 
-data "github_app" "actions" {
-  slug = "github-actions"
-}
+# Rulesets rather than classic github_branch_protection: rulesets are GitHub's
+# strategic mechanism and the only one with first-class bypass actors. Bypass
+# actors are per ruleset, so each ruleset holds one policy and a bypass skips
+# that policy alone.
 
 locals {
   # Mode "always" lets the admin push directly, not only merge.
-  admin_bypass_actor = {
+  admin_actor = {
     actor_id    = 5 # built-in repository "admin" role
     actor_type  = "RepositoryRole"
     bypass_mode = "always"
@@ -85,58 +97,27 @@ locals {
     bypass_mode = "always"
   }
 
+  admin_bypass = [local.admin_actor]
+
   # Mode "pull_request" lets Renovate merge its pull requests without letting
   # it push to develop.
-  merge_bypass_actors = concat(
-    [local.admin_bypass_actor],
+  merge_bypass = concat(
+    local.admin_bypass,
     var.renovate_automerge ? [merge(local.renovate_actor, { bypass_mode = "pull_request" })] : [],
   )
 
-  # Literal refs rather than ~DEFAULT_BRANCH, which would carry develop's
-  # rules onto another branch if the default ever moved. Release branches
-  # carry a release to main, so they take main's protections.
-  develop_refs   = ["refs/heads/${local.default_branch}"]
-  release_refs   = var.git_flow ? ["refs/heads/${local.release_branch}", "refs/heads/release/**"] : []
-  protected_refs = concat(local.develop_refs, local.release_refs)
-
-  # Rulesets on GitHub Free cannot restrict which branch a pull request
-  # comes from, so each Git flow repository runs a job by this name. It fails
-  # a pull request into main unless it comes from release/* or hotfix/*, and
-  # passes every other pull request.
-  git_flow_source_check = "Check Git flow source branch"
-
-  required_checks = var.required_status_checks == null ? [] : concat(
-    var.required_status_checks.ci_results_check ? ["Check CI results"] : [],
-    var.required_status_checks.contexts,
-  )
-
-  # Release refs require up-to-date branches whatever develop does: they
-  # take only release and hotfix merges, so Renovate never rebases against
-  # them.
-  checks_refs = merge(
-    var.required_status_checks != null ? {
-      develop = {
-        refs     = local.develop_refs
-        contexts = local.required_checks
-        strict   = var.required_status_checks.strict
-      }
-    } : {},
-    var.git_flow ? {
-      release = {
-        refs     = local.release_refs
-        contexts = concat([local.git_flow_source_check], local.required_checks)
-        strict   = true
-      }
-    } : {},
-  )
+  # Renovate pushes to its branches directly, so it needs mode "always" there.
+  # The hook-fix App is the one other actor trusted to add commits that
+  # Renovate then merges past review.
+  renovate_branch_bypass = [
+    local.admin_actor,
+    merge(local.renovate_actor, { bypass_mode = "always" }),
+    local.hook_fix_actor,
+  ]
 }
 
-# Rulesets rather than classic github_branch_protection: rulesets are GitHub's
-# strategic mechanism and the only one with first-class bypass actors. Bypass
-# actors are per ruleset, so each ruleset holds one policy and a bypass skips
-# that policy alone.
 resource "github_repository_ruleset" "default" {
-  count = var.rulesets ? 1 : 0
+  count = local.rulesets ? 1 : 0
 
   name        = "default"
   repository  = github_repository.this.name
@@ -152,26 +133,29 @@ resource "github_repository_ruleset" "default" {
     }
   }
 
-  bypass_actors {
-    actor_id    = local.admin_bypass_actor.actor_id
-    actor_type  = local.admin_bypass_actor.actor_type
-    bypass_mode = local.admin_bypass_actor.bypass_mode
+  dynamic "bypass_actors" {
+    for_each = local.admin_bypass
+    content {
+      actor_id    = bypass_actors.value.actor_id
+      actor_type  = bypass_actors.value.actor_type
+      bypass_mode = bypass_actors.value.bypass_mode
+    }
   }
 
   # No required_signatures: GitHub already signs the merges it makes, so it
-  # would be redundant on develop and main while adding friction to direct
+  # would be redundant on protected branches while adding friction to direct
   # pushes.
   rules {
     deletion                = true
     non_fast_forward        = true
-    required_linear_history = !var.git_flow
+    required_linear_history = local.flow.linear_history
   }
 }
 
 # Merging a pull request updates the branch too, so only bypass actors can
 # merge.
 resource "github_repository_ruleset" "admin_only" {
-  count = var.rulesets && var.admin_only_updates ? 1 : 0
+  count = local.rulesets && var.admin_only_updates ? 1 : 0
 
   name        = "admin-only"
   repository  = github_repository.this.name
@@ -188,7 +172,7 @@ resource "github_repository_ruleset" "admin_only" {
   }
 
   dynamic "bypass_actors" {
-    for_each = local.merge_bypass_actors
+    for_each = local.merge_bypass
     content {
       actor_id    = bypass_actors.value.actor_id
       actor_type  = bypass_actors.value.actor_type
@@ -203,7 +187,7 @@ resource "github_repository_ruleset" "admin_only" {
 
 # The admin bypasses because a solo maintainer can't satisfy a required review.
 resource "github_repository_ruleset" "review" {
-  count = var.rulesets ? 1 : 0
+  count = local.rulesets ? 1 : 0
 
   name        = "review"
   repository  = github_repository.this.name
@@ -220,7 +204,7 @@ resource "github_repository_ruleset" "review" {
   }
 
   dynamic "bypass_actors" {
-    for_each = local.merge_bypass_actors
+    for_each = local.merge_bypass
     content {
       actor_id    = bypass_actors.value.actor_id
       actor_type  = bypass_actors.value.actor_type
@@ -232,7 +216,7 @@ resource "github_repository_ruleset" "review" {
     # Code owner review is a separate condition from the review count, so a
     # repo can gate on CODEOWNERS while the count stays at 0.
     pull_request {
-      allowed_merge_methods             = var.git_flow ? ["merge"] : ["squash"]
+      allowed_merge_methods             = local.flow.merge_methods
       required_approving_review_count   = 0
       require_code_owner_review         = var.require_code_owner_review
       required_review_thread_resolution = true
@@ -240,10 +224,45 @@ resource "github_repository_ruleset" "review" {
   }
 }
 
+data "github_app" "actions" {
+  slug = "github-actions"
+}
+
+locals {
+  # Rulesets on GitHub Free cannot restrict which branch a pull request
+  # comes from, so each Git flow repository runs a job by this name. It fails
+  # a pull request into main unless it comes from release/* or hotfix/*, and
+  # passes every other pull request.
+  git_flow_source_check = "Check Git flow source branch"
+
+  required_checks = var.required_status_checks == null ? [] : concat(
+    var.required_status_checks.ci_results_check ? ["Check CI results"] : [],
+    var.required_status_checks.contexts,
+  )
+
+  # Release refs require up-to-date branches whatever develop does: they
+  # take only release and hotfix merges, so Renovate never rebases against
+  # them.
+  checks_refs = {
+    for name, policy in {
+      develop = {
+        refs     = local.develop_refs
+        contexts = local.required_checks
+        strict   = try(var.required_status_checks.strict, false)
+      }
+      release = {
+        refs     = local.flow.release_refs
+        contexts = concat([local.git_flow_source_check], local.required_checks)
+        strict   = true
+      }
+    } : name => policy if length(policy.refs) > 0 && length(policy.contexts) > 0
+  }
+}
+
 # No bypass actors: a merge that bypasses any ruleset skips every rule its
 # merger can bypass, so merges past admin-only would skip these checks too.
 resource "github_repository_ruleset" "checks" {
-  for_each = var.rulesets ? local.checks_refs : {}
+  for_each = local.rulesets ? local.checks_refs : {}
 
   name        = "checks-${each.key}"
   repository  = github_repository.this.name
@@ -279,7 +298,7 @@ resource "github_repository_ruleset" "checks" {
 # Without this, anyone who can push to a Renovate branch could add commits to a
 # pull request Renovate then merges past review.
 resource "github_repository_ruleset" "renovate" {
-  count = var.rulesets && var.renovate_automerge ? 1 : 0
+  count = local.rulesets && var.renovate_automerge ? 1 : 0
 
   name        = "renovate"
   repository  = github_repository.this.name
@@ -293,15 +312,8 @@ resource "github_repository_ruleset" "renovate" {
     }
   }
 
-  # Renovate pushes to its branches directly, so it needs mode "always" here.
-  # The hook-fix App is the one other actor trusted to add commits that
-  # Renovate then merges past review.
   dynamic "bypass_actors" {
-    for_each = [
-      local.admin_bypass_actor,
-      merge(local.renovate_actor, { bypass_mode = "always" }),
-      local.hook_fix_actor,
-    ]
+    for_each = local.renovate_branch_bypass
     content {
       actor_id    = bypass_actors.value.actor_id
       actor_type  = bypass_actors.value.actor_type
@@ -318,7 +330,7 @@ resource "github_repository_ruleset" "renovate" {
 # tag leaves the registry and the repository silently disagreeing. The admin
 # bypass keeps a botched tag fixable.
 resource "github_repository_ruleset" "immutable_tags" {
-  count = var.rulesets ? 1 : 0
+  count = local.rulesets ? 1 : 0
 
   name        = "immutable-tags"
   repository  = github_repository.this.name
@@ -332,10 +344,13 @@ resource "github_repository_ruleset" "immutable_tags" {
     }
   }
 
-  bypass_actors {
-    actor_id    = local.admin_bypass_actor.actor_id
-    actor_type  = local.admin_bypass_actor.actor_type
-    bypass_mode = local.admin_bypass_actor.bypass_mode
+  dynamic "bypass_actors" {
+    for_each = local.admin_bypass
+    content {
+      actor_id    = bypass_actors.value.actor_id
+      actor_type  = bypass_actors.value.actor_type
+      bypass_mode = bypass_actors.value.bypass_mode
+    }
   }
 
   # No non_fast_forward: update already blocks fast-forwards.
@@ -350,7 +365,7 @@ resource "github_repository_ruleset" "immutable_tags" {
 # so enabling it in the UI drifts back off.
 resource "github_repository_dependabot_security_updates" "this" {
   repository = github_repository.this.name
-  enabled    = var.dependabot_security_updates
+  enabled    = var.legacy.dependabot_security_updates
 }
 
 # A workflow's own permissions: block overrides this outright, so this governs
@@ -358,18 +373,17 @@ resource "github_repository_dependabot_security_updates" "this" {
 resource "github_workflow_repository_permissions" "this" {
   repository                       = github_repository.this.name
   default_workflow_permissions     = "read"
-  can_approve_pull_request_reviews = var.can_approve_pull_request_reviews
+  can_approve_pull_request_reviews = var.legacy.can_approve_pull_request_reviews
 }
 
-# The org allowlist governs unless allowed_action_patterns narrows it.
-# Declared rather than omitted because destroying it resets the repository to
-# allow every action.
+# The org allowlist governs. Declared rather than omitted because destroying
+# it resets the repository to allow every action.
 resource "github_actions_repository_permissions" "this" {
   repository      = github_repository.this.name
-  allowed_actions = var.allowed_action_patterns == null ? "all" : "selected"
+  allowed_actions = var.legacy.allowed_action_patterns == null ? "all" : "selected"
 
   dynamic "allowed_actions_config" {
-    for_each = var.allowed_action_patterns == null ? [] : [var.allowed_action_patterns]
+    for_each = var.legacy.allowed_action_patterns == null ? [] : [var.legacy.allowed_action_patterns]
     content {
       github_owned_allowed = true
       verified_allowed     = true
@@ -404,24 +418,4 @@ resource "github_repository_environment_deployment_policy" "this" {
   repository     = github_repository.this.name
   environment    = github_repository_environment.this[each.value.environment].environment
   branch_pattern = each.value.pattern
-}
-
-resource "github_repository_pages" "this" {
-  count = var.pages != null ? 1 : 0
-
-  repository     = github_repository.this.name
-  build_type     = var.pages.build_type
-  cname          = var.pages.cname
-  https_enforced = var.pages.https_enforced
-
-  # source is only valid for build_type = "legacy"; the GitHub API rejects it
-  # for workflow builds.
-  dynamic "source" {
-    for_each = var.pages.build_type == "legacy" ? [1] : []
-    content {
-      branch = var.git_flow ? local.release_branch : local.default_branch
-    }
-  }
-
-  depends_on = [github_branch.release]
 }

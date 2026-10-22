@@ -1,8 +1,6 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-# Every setting below that departs from the module's defaults keeps
-# genshin.dungeon.studio as it was before Terraform managed it.
 module "genshin_dungeon_studio" {
   source = "../modules/github_repository"
 
@@ -10,22 +8,14 @@ module "genshin_dungeon_studio" {
   description     = "Genshin Impact team builder — manage your character and weapon collection, build team compositions, and plan your roster."
   has_discussions = true
 
-  git_flow                         = false
-  rulesets                         = false
-  allow_auto_merge                 = true
-  can_approve_pull_request_reviews = true
-  dependabot_security_updates      = true
-  allowed_action_patterns = [
-    "firebaseextended/action-hosting-deploy@v0",
-    "amannn/action-semantic-pull-request@*",
-    "pnpm/action-setup@*",
-    "pre-commit/action@*",
-    "actions/cache@*",
-    "lycheeverse/lychee-action@*",
-    "peter-evans/create-issue-from-file@*",
-    "release-drafter/*",
-    "zizmorcore/zizmor-action@*",
-  ]
+  legacy = {
+    squash_only                      = true
+    hand_made_rulesets               = true
+    allow_auto_merge                 = true
+    allowed_action_patterns          = local.allowed_action_patterns
+    can_approve_pull_request_reviews = true
+    dependabot_security_updates      = true
+  }
 }
 
 import {
