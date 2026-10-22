@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 ---
-name: Terraform infrastructure
+name: Terraform apply
 
 # CI cannot reach bootstrap's state (README §Layout), so that layer stays a
 # manual apply and nothing here watches terraform/bootstrap/.
@@ -13,7 +13,7 @@ on:
     paths:
       - terraform/infrastructure/**
       - scripts/export-terraform-credentials.sh
-      - .github/workflows/terraform-infrastructure.yml
+      - .github/workflows/terraform-apply.yml
 
 permissions:
   contents: read
