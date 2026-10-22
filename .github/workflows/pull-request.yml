@@ -72,8 +72,7 @@ jobs:
         run: |
           set -euo pipefail
           read_secret() {
-            gcloud secrets versions access latest --secret "$1" \
-              --project dungeon-studio-infrastructure
+            gcloud secrets versions access latest --secret "$1"
           }
           app_id="$(read_secret github-app-id)"
           installation_id="$(read_secret github-app-installation-id)"
@@ -104,8 +103,8 @@ jobs:
           script: |
             const fs = require('fs');
             const plan = fs.readFileSync('plan.txt', 'utf8');
-            const m = plan.match(/^(No changes\..+|Plan: .+)$/m);
-            const summary = m ? m[0] : 'Plan generated';
+            const summaryLine = plan.match(/^(No changes\..+|Plan: .+)$/m);
+            const summary = summaryLine ? summaryLine[0] : 'Plan generated';
             const marker = '<!-- terraform-plan:infrastructure -->';
             const body = [
               marker,
@@ -125,11 +124,11 @@ jobs:
               ...context.repo,
               issue_number: context.issue.number,
             });
-            const hit = comments.find((c) => c.body.includes(marker));
-            if (hit) {
+            const existing = comments.find((c) => c.body.includes(marker));
+            if (existing) {
               await github.rest.issues.updateComment({
                 ...context.repo,
-                comment_id: hit.id,
+                comment_id: existing.id,
                 body,
               });
             } else {
