@@ -1,0 +1,78 @@
+# SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
+# SPDX-License-Identifier: MIT
+---
+name: Terraform infrastructure
+
+# CI cannot reach bootstrap's state (README §Layout), so that layer stays a
+# manual apply and nothing here watches terraform/bootstrap/.
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - develop
+    paths:
+      - terraform/infrastructure/**
+      - scripts/export-terraform-credentials.sh
+      - .github/workflows/terraform-infrastructure.yml
+
+permissions:
+  contents: read
+
+jobs:
+  terraform-apply:
+    name: Apply Terraform infrastructure layer
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    # Shared with the pull request plan job so a plan never reads state
+    # mid-write. queue: max forbids cancel-in-progress, so no arrival
+    # interrupts an apply holding the state lock.
+    concurrency:
+      group: terraform-state
+      queue: max
+
+    permissions:
+      contents: read
+      id-token: write
+
+    env:
+      # renovate: datasource=github-releases depName=hashicorp/terraform extractVersion=^v(?<version>.+)$
+      TERRAFORM_VERSION: '1.16.6'
+      LAYER: terraform/infrastructure
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          terraform_wrapper: false
+
+      # The deployer's Workload Identity binding admits only refs/heads/develop,
+      # so a dispatch from any other ref fails here.
+      - name: Authenticate as the read-write deployer
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3.0.0
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOYER_RW_EMAIL }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@aa5489c8933f4cc7a4f7d45035b3b1440c9c10db # v3.0.1
+
+      - name: Export GitHub App credentials
+        run: scripts/export-terraform-credentials.sh
+
+      - name: Initialize Terraform
+        run: terraform -chdir="${LAYER}" init -input=false
+
+      # Applying the saved plan keeps the run log's plan and the applied
+      # change identical.
+      - name: Plan
+        run: terraform -chdir="${LAYER}" plan -input=false -no-color -out=tfplan
+
+      - name: Apply
+        run: terraform -chdir="${LAYER}" apply -input=false -no-color tfplan
