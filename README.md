@@ -43,10 +43,10 @@ Three recipes make up the operator surface:
   credentials the infrastructure layer authenticates with. Run it once per
   machine, or to rotate the deployer credentials.
 - `just infrastructure` — local `terraform apply` against the infrastructure
-  layer, for when continuous integration cannot apply it: the first run after
-  bootstrap, or a broken workflow. Merging to `develop` applies this layer
-  otherwise. It reads the GitHub App credentials out of Secret Manager, so
-  register the App before the first run.
+  layer. Merging to `develop` applies this layer in continuous integration, so
+  run the recipe only for the first apply after bootstrap or while that
+  workflow is broken. It reads the GitHub App credentials out of Secret
+  Manager, so register the App before the first run.
 - `just configure-hook-fix` — writes the hook-fix App's credentials to the
   repositories Renovate automerges. Run it after registering the App or
   rotating its key.

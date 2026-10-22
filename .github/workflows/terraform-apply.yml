@@ -3,8 +3,7 @@
 ---
 name: Terraform apply
 
-# CI cannot reach bootstrap's state (README §Layout), so that layer stays a
-# manual apply and nothing here watches terraform/bootstrap/.
+# Bootstrap applies by hand: CI cannot reach its state (README §Layout).
 on:
   workflow_dispatch:
   push:
@@ -24,9 +23,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
-    # Shared with the pull request plan job so a plan never reads state
-    # mid-write. queue: max forbids cancel-in-progress, so no arrival
-    # interrupts an apply holding the state lock.
+    # Shared with the pull request plan so a plan never reads state
+    # mid-write. queue: max keeps a later plan from replacing a pending apply.
     concurrency:
       group: terraform-state
       queue: max
