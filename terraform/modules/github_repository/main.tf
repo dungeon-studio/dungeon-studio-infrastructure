@@ -6,14 +6,13 @@ locals {
   main_branch    = "main"
   rulesets       = !var.legacy.hand_made_rulesets
 
-  # Literal refs rather than ~DEFAULT_BRANCH, which would carry develop's
-  # rules onto another branch if the default ever moved.
+  # A literal ref, because ~DEFAULT_BRANCH would move develop's rules to
+  # whichever branch became the default.
   develop_refs = ["refs/heads/${local.develop_branch}"]
 
-  # Git flow takes a merge commit on every edge. A squashed release shares no
-  # ancestry with develop, so later releases re-present its changes as
-  # conflicts. Release branches carry a release to main, so they take main's
-  # protections.
+  # A squashed release shares no ancestry with develop, so the next release
+  # re-presents its changes as conflicts. Release branches become main, so
+  # they take main's protections.
   flow = var.legacy.squash_only ? {
     branches       = []
     merge_methods  = ["squash"]
@@ -73,10 +72,9 @@ resource "github_branch" "long_lived" {
   depends_on = [github_branch_default.this]
 }
 
-# Rulesets rather than classic github_branch_protection: rulesets are GitHub's
-# strategic mechanism and the only one with first-class bypass actors. Bypass
-# actors are per ruleset, so each ruleset holds one policy and a bypass skips
-# that policy alone.
+# Rulesets, because classic branch protection has no bypass actors. A bypass
+# applies to a whole ruleset, so each ruleset holds one policy and a bypass
+# skips only that policy.
 
 locals {
   # Mode "always" lets the admin push directly, not only merge.
@@ -142,9 +140,8 @@ resource "github_repository_ruleset" "default" {
     }
   }
 
-  # No required_signatures: GitHub already signs the merges it makes, so it
-  # would be redundant on protected branches while adding friction to direct
-  # pushes.
+  # No required_signatures: GitHub signs the merges it makes, so the rule
+  # would only block unsigned direct pushes.
   rules {
     deletion                = true
     non_fast_forward        = true
@@ -213,8 +210,7 @@ resource "github_repository_ruleset" "review" {
   }
 
   rules {
-    # Code owner review is a separate condition from the review count, so a
-    # repo can gate on CODEOWNERS while the count stays at 0.
+    # Code owner review applies even with a review count of 0.
     pull_request {
       allowed_merge_methods             = local.flow.merge_methods
       required_approving_review_count   = 0
@@ -229,10 +225,9 @@ data "github_app" "actions" {
 }
 
 locals {
-  # Rulesets on GitHub Free cannot restrict which branch a pull request
-  # comes from, so each Git flow repository runs a job by this name. It fails
-  # a pull request into main unless it comes from release/* or hotfix/*, and
-  # passes every other pull request.
+  # Each Git flow repository runs a job by this name, because rulesets on
+  # GitHub Free cannot restrict a pull request's source branch. It fails a
+  # pull request into main from anything but release/* or hotfix/*.
   git_flow_source_check = "Check Git flow source branch"
 
   required_checks = var.required_status_checks == null ? [] : concat(
@@ -240,9 +235,8 @@ locals {
     var.required_status_checks.contexts,
   )
 
-  # Release refs require up-to-date branches whatever develop does: they
-  # take only release and hotfix merges, so Renovate never rebases against
-  # them.
+  # Release refs can always require up-to-date branches: Renovate never
+  # targets them, so no rebase loop resets its release-age wait.
   checks_refs = {
     for name, policy in {
       develop = {
@@ -360,24 +354,22 @@ resource "github_repository_ruleset" "immutable_tags" {
   }
 }
 
-# Off by default because Renovate owns dependency pull requests and already
-# fixes the advisories Dependabot alerts surface. Declared rather than omitted
-# so enabling it in the UI drifts back off.
+# Off because Renovate already fixes the advisories Dependabot alerts raise.
+# Declared so enabling it in the UI drifts back off.
 resource "github_repository_dependabot_security_updates" "this" {
   repository = github_repository.this.name
   enabled    = var.legacy.dependabot_security_updates
 }
 
-# A workflow's own permissions: block overrides this outright, so this governs
-# only the jobs that declare none.
+# Applies only to jobs without a permissions: block.
 resource "github_workflow_repository_permissions" "this" {
   repository                       = github_repository.this.name
   default_workflow_permissions     = "read"
   can_approve_pull_request_reviews = var.legacy.can_approve_pull_request_reviews
 }
 
-# The org allowlist governs. Declared rather than omitted because destroying
-# it resets the repository to allow every action.
+# Declared because destroying it resets the repository to allow every action,
+# whatever the org allowlist says.
 resource "github_actions_repository_permissions" "this" {
   repository      = github_repository.this.name
   allowed_actions = var.legacy.allowed_action_patterns == null ? "all" : "selected"

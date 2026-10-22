@@ -33,19 +33,19 @@ variable "required_status_checks" {
   default     = null
   description = <<-EOT
     Status checks that must pass before merging into develop, main, or
-    release/**. contexts are matched by check-run name and must come from
-    GitHub Actions; strict requires a pull request into develop to be up to
-    date first, which main and release/** always require. Omit to leave
-    develop ungated. Only require check names that are unique on a
-    pull request — a name shared by several workflows can't be pinned to
-    one of them.
+    release/**. Omit to leave develop ungated.
 
-    ci_results_check also requires the aggregator job "Check CI results".
-    A required check that stops reporting blocks merges indefinitely, the
-    admin's included.
-    Matrix leg names change with the versions they test, so a matrix repo
-    requires the aggregator instead of its legs. The job must list every
-    job it stands in for under needs: and run on pushes to develop.
+    contexts are GitHub Actions check-run names, each unique on a pull
+    request. A required check that stops reporting blocks every merge,
+    the admin's included.
+
+    strict requires a pull request into develop to be up to date; main
+    and release/** always require it.
+
+    ci_results_check requires the aggregator job "Check CI results"
+    instead of matrix legs, whose names change with the versions they
+    test. The job must list every job it stands in for under needs: and
+    run on pushes to develop.
   EOT
 }
 
@@ -53,10 +53,9 @@ variable "require_code_owner_review" {
   type        = bool
   default     = false
   description = <<-EOT
-    Require an approving review from a code owner before merging into
-    develop, main, or release/**. Gates a pull request whenever CODEOWNERS assigns an
-    owner to a changed path; with no .github/CODEOWNERS on that branch it
-    gates nothing.
+    Require a code owner's approval before merging into develop, main, or
+    release/**. Gates only pull requests that change a path
+    .github/CODEOWNERS assigns.
   EOT
 }
 
@@ -65,9 +64,8 @@ variable "admin_only_updates" {
   default     = true
   description = <<-EOT
     Only the repository admin, and Renovate under renovate_automerge, can
-    update develop, main, or release/**, whether by push or by merging a
-    pull request.
-    Set false once others merge pull requests.
+    push or merge to develop, main, or release/**. Set false once others
+    merge pull requests.
   EOT
 }
 
@@ -75,11 +73,9 @@ variable "renovate_automerge" {
   type        = bool
   default     = false
   description = <<-EOT
-    Renovate merges its own pull requests without review, once the
-    required status checks pass. Only Renovate and the hook-fix App can
-    push to its renovate/** branches, so its pull requests carry only
-    their commits. Enables GitHub auto-merge, which ignores any check that
-    isn't required.
+    Renovate merges its own pull requests without review once the required
+    status checks pass; GitHub auto-merge ignores checks that aren't
+    required. Only Renovate and the hook-fix App can push to renovate/**.
   EOT
 
   validation {
@@ -100,14 +96,11 @@ variable "environments" {
   }))
   default     = {}
   description = <<-EOT
-    Deployment environments, keyed by name. Each scopes its own secrets
-    and gives a workflow a target to declare via `environment: <name>`.
+    Deployment environments, keyed by name, each scoping its own secrets
+    for workflows that declare `environment: <name>`.
 
-    deployment_branches lists the refs a job may reference this
-    environment from — i.e. the only refs that can read its secrets.
-    Empty (the default) admits any ref. Maps to the environment's
-    deployment branch policy (Settings → Environments → Deployment
-    branches and tags), and is unrelated to rulesets.
+    deployment_branches lists the only refs whose jobs can use the
+    environment and read its secrets. Empty admits any ref.
   EOT
 }
 
@@ -123,24 +116,20 @@ variable "legacy" {
   default     = {}
   nullable    = false
   description = <<-EOT
-    Settings a repository kept from before Terraform managed it, each
-    holding it back from an org default until it adopts that default.
-    A repository on every default omits this.
+    Pre-Terraform settings a repository keeps in place of org defaults.
+    Omit it once the repository adopts them all.
 
-    squash_only: no main branch and squash merges only, instead of Git
-    flow. Git flow has develop integrate feature work and main hold
-    releases, merges every pull request with a merge commit, and
-    protects main and release/** alongside develop.
+    squash_only: squash merges and no main branch, in place of Git flow's
+    merge commits and protected main and release/**.
 
-    hand_made_rulesets: leave the repository's own rulesets in place of
-    this module's branch and tag rulesets.
+    hand_made_rulesets: the repository's own rulesets, in place of this
+    module's.
 
-    allow_auto_merge: GitHub auto-merge without renovate_automerge's
-    rulesets.
+    allow_auto_merge: GitHub auto-merge without renovate_automerge.
 
-    allowed_action_patterns: a repository-level action allowlist,
-    narrowing the org's, of GitHub-owned actions, verified Marketplace
-    creators, and these owner/repo@* patterns.
+    allowed_action_patterns: owner/repo@* patterns for a repository
+    allowlist inside the org's. GitHub-owned and verified-creator actions
+    stay allowed.
 
     can_approve_pull_request_reviews: workflows' GITHUB_TOKEN may create
     and approve pull requests.

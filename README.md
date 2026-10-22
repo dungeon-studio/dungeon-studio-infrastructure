@@ -67,6 +67,10 @@ continuous integration cannot read or rewrite the state that defines its own
 credentials. `genshin.dungeon.studio` keeps a separate bucket in its own
 project on the same reasoning.
 
+Declare a repository as a call to `terraform/modules/github_repository/`,
+which holds the org's defaults: Git flow, its rulesets, and read-only
+workflow tokens. The call names only what differs.
+
 ## Run the first-time bootstrap
 
 Beyond the tooling above you need [Terraform](https://terraform.io), the
