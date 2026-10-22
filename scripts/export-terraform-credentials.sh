@@ -2,9 +2,9 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 #
-# Writes the GitHub App credentials the infrastructure layer's github provider
-# reads to GITHUB_ENV, for a workflow job already authenticated as a deployer.
-# scripts/infrastructure.sh exports the same values for a local apply.
+# Gives a workflow job the GitHub App credentials that the infrastructure
+# layer's github provider needs. Run it after the job authenticates as a
+# deployer. scripts/infrastructure.sh does the same for a local apply.
 
 set -euo pipefail
 
