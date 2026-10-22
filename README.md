@@ -103,6 +103,12 @@ fills those secrets;
 [Rotate the GitHub App's private key](docs/how-to/rotate-github-app-key.md)
 replaces the key afterwards.
 
+A second App, `dungeon-studio-hook-fix`, pushes pre-commit hook fixes to
+Renovate branches. Its credentials are Actions secrets on the repositories
+Renovate automerges, written by `just configure-hook-fix`;
+[Create the hook-fix GitHub App](docs/how-to/create-hook-fix-github-app.md)
+covers registration and key rotation.
+
 ## Contributing
 
 This is infrastructure maintained for the organization's own use. Issues and
