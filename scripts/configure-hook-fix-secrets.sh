@@ -10,7 +10,6 @@
 set -euo pipefail
 
 HOOK_FIX_APP_ID="${HOOK_FIX_APP_ID:-5422895}"
-SETUP_DOC="docs/how-to/create-hook-fix-github-app.md"
 
 # Keep in step with the App's installation: a repository listed here but not
 # installed on gets credentials that cannot push.
@@ -26,6 +25,11 @@ die() {
 check_preconditions() {
   command -v gh >/dev/null || die "gh not found in PATH"
   gh auth status >/dev/null 2>&1 || die "gh is not authenticated; run 'gh auth login'"
+}
+
+check_app_id() {
+  [[ "${HOOK_FIX_APP_ID}" =~ ^[0-9]+$ ]] ||
+    die "HOOK_FIX_APP_ID must be digits, got '${HOOK_FIX_APP_ID}'"
 }
 
 resolve_private_key_path() {
@@ -44,25 +48,29 @@ resolve_private_key_path() {
   # A wrong key surfaces only when the first fix push is refused, a long way
   # from the paste that caused it.
   grep -q -- '-----BEGIN .*PRIVATE KEY-----' "${path}" ||
-    die "${path} is not a PEM private key; see ${SETUP_DOC}"
+    die "${path} is not a PEM private key; see docs/how-to/create-hook-fix-github-app.md"
 
   printf '%s' "${path}"
 }
 
+set_hook_fix_secrets() {
+  local repo="$1" key_path="$2"
+
+  echo "Setting HOOK_FIX_APP_ID and HOOK_FIX_APP_PRIVATE_KEY on ${repo}"
+  gh secret set HOOK_FIX_APP_ID --repo "${repo}" --body "${HOOK_FIX_APP_ID}"
+  # stdin keeps the key out of the process list.
+  gh secret set HOOK_FIX_APP_PRIVATE_KEY --repo "${repo}" <"${key_path}"
+}
+
 main() {
   check_preconditions
-
-  [[ "${HOOK_FIX_APP_ID}" =~ ^[0-9]+$ ]] ||
-    die "HOOK_FIX_APP_ID must be digits, got '${HOOK_FIX_APP_ID}'"
+  check_app_id
 
   local key_path repo
   key_path="$(resolve_private_key_path)"
 
   for repo in "${REPOS[@]}"; do
-    echo "Setting HOOK_FIX_APP_ID and HOOK_FIX_APP_PRIVATE_KEY on ${repo}"
-    gh secret set HOOK_FIX_APP_ID --repo "${repo}" --body "${HOOK_FIX_APP_ID}"
-    # stdin keeps the key out of the process list.
-    gh secret set HOOK_FIX_APP_PRIVATE_KEY --repo "${repo}" <"${key_path}"
+    set_hook_fix_secrets "${repo}" "${key_path}"
   done
 
   echo "Shred ${key_path} once the secrets are set."
