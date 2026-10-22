@@ -1,6 +1,48 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
+module "genshin_dungeon_studio" {
+  source = "../modules/github_repository"
+
+  name            = "genshin.dungeon.studio"
+  description     = "Genshin Impact team builder — manage your character and weapon collection, build team compositions, and plan your roster."
+  has_discussions = true
+
+  legacy = {
+    squash_only                      = true
+    hand_made_rulesets               = true
+    allow_auto_merge                 = true
+    allowed_action_patterns          = local.allowed_action_patterns
+    can_approve_pull_request_reviews = true
+    dependabot_security_updates      = true
+  }
+}
+
+import {
+  to = module.genshin_dungeon_studio.github_repository.this
+  id = "genshin.dungeon.studio"
+}
+
+import {
+  to = module.genshin_dungeon_studio.github_branch_default.this
+  id = "genshin.dungeon.studio"
+}
+
+import {
+  to = module.genshin_dungeon_studio.github_repository_dependabot_security_updates.this
+  id = "genshin.dungeon.studio"
+}
+
+import {
+  to = module.genshin_dungeon_studio.github_workflow_repository_permissions.this
+  id = "genshin.dungeon.studio"
+}
+
+import {
+  to = module.genshin_dungeon_studio.github_actions_repository_permissions.this
+  id = "genshin.dungeon.studio"
+}
+
 data "github_app" "actions" {
   slug = "github-actions"
 }
