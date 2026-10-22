@@ -14,9 +14,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Only the infrastructure layer plans here. CI holds no grant on the
-  # bootstrap state bucket, so it cannot read or rewrite the state that
-  # defines its own credentials; CI validates bootstrap instead.
+  # CI cannot read bootstrap's state (README §Layout), so only this layer
+  # plans.
   terraform-plan:
     name: Plan Terraform infrastructure layer
     runs-on: ubuntu-latest
@@ -27,10 +26,10 @@ jobs:
     # from a fork away from the deployer even if that default changes.
     if: github.event.pull_request.head.repo.full_name == github.repository
 
-    # Serializes every run touching shared state, plans and applies together.
-    # The read-only deployer cannot write a lock, so the plan runs -lock=false
-    # and would otherwise refresh against state an apply is superseding.
-    # queue: max stops an arriving run cancelling one that holds the lock.
+    # The read-only deployer cannot write a lock, so plan runs -lock=false.
+    # A job that writes this state must join this group, or a plan can read
+    # state mid-write. queue: max queues every waiting run instead of
+    # cancelling all but the newest.
     concurrency:
       group: terraform-state
       queue: max
