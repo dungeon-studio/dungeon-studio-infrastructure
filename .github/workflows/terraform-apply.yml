@@ -38,7 +38,10 @@ jobs:
     env:
       # renovate: datasource=github-releases depName=hashicorp/terraform extractVersion=^v(?<version>.+)$
       TERRAFORM_VERSION: '1.16.6'
-      LAYER: terraform/infrastructure
+
+    defaults:
+      run:
+        working-directory: terraform/infrastructure
 
     steps:
       - name: Checkout repository
@@ -64,15 +67,15 @@ jobs:
         uses: google-github-actions/setup-gcloud@aa5489c8933f4cc7a4f7d45035b3b1440c9c10db # v3.0.1
 
       - name: Export GitHub App credentials
-        run: scripts/export-terraform-credentials.sh
+        run: "${GITHUB_WORKSPACE}/scripts/export-terraform-credentials.sh"
 
       - name: Initialize Terraform
-        run: terraform -chdir="${LAYER}" init -input=false
+        run: terraform init -input=false
 
       # Applying the saved plan keeps the run log's plan and the applied
       # change identical.
       - name: Plan
-        run: terraform -chdir="${LAYER}" plan -input=false -no-color -out=tfplan
+        run: terraform plan -input=false -no-color -out=tfplan
 
       - name: Apply
-        run: terraform -chdir="${LAYER}" apply -input=false -no-color tfplan
+        run: terraform apply -input=false -no-color tfplan
