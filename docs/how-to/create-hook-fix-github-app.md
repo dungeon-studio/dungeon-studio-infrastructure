@@ -14,8 +14,7 @@ credentials stay out of Terraform, which would keep the key in state.
 
 You need an owner role in the org and admin on each target repository.
 
-The App exists with ID `5422895`, which `just configure-hook-fix` writes by
-default. Re-registering it changes the ID, so follow every section below.
+The registered App's ID is `5422895`.
 
 ## Register the App
 
@@ -63,8 +62,8 @@ just configure-hook-fix
 
 The recipe writes `HOOK_FIX_APP_ID` and `HOOK_FIX_APP_PRIVATE_KEY` to every
 repository in `REPOS`, overwriting what is there. It prompts for the private
-key's path; export `HOOK_FIX_APP_PRIVATE_KEY_PATH` beforehand to run without
-a terminal. Export `HOOK_FIX_APP_ID` too if the App was re-registered.
+key's path. Export `HOOK_FIX_APP_PRIVATE_KEY_PATH` beforehand to run without
+a terminal, and `HOOK_FIX_APP_ID` if the App was re-registered.
 
 Then destroy the downloaded key:
 

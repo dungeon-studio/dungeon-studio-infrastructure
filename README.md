@@ -35,7 +35,7 @@ pre-commit install
 Every check this repository enforces runs through pre-commit, so that one
 command is the whole local setup.
 
-Two recipes make up the operator surface:
+Three recipes make up the operator surface:
 
 - `just bootstrap` — creates the `dungeon-studio-infrastructure` project, the
   `dungeon-studio-tfstate` state bucket, the Workload Identity Federation pool,
@@ -45,6 +45,9 @@ Two recipes make up the operator surface:
 - `just infrastructure` — local `terraform apply` against the infrastructure
   layer, run after merging to `develop`. It reads the GitHub App credentials
   out of Secret Manager, so register the App before the first run.
+- `just configure-hook-fix` — writes the hook-fix App's credentials to the
+  repositories Renovate automerges. Run it after registering the App or
+  rotating its key.
 
 ## Layout
 
@@ -104,10 +107,10 @@ fills those secrets;
 replaces the key afterwards.
 
 A second App, `dungeon-studio-hook-fix`, pushes pre-commit hook fixes to
-Renovate branches. Its credentials are Actions secrets on the repositories
-Renovate automerges, written by `just configure-hook-fix`;
+Renovate branches. Its credentials are Actions secrets, not Terraform
+resources, so the key stays out of state.
 [Create the hook-fix GitHub App](docs/how-to/create-hook-fix-github-app.md)
-covers registration and key rotation.
+registers it, sets the secrets, and rotates the key.
 
 ## Contributing
 

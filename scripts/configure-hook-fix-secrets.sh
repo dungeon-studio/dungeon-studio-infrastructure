@@ -4,15 +4,15 @@
 #
 # Writes the hook-fix GitHub App's ID and private key as Actions secrets to
 # each repository Renovate automerges. Terraform would keep the key in state,
-# so this runs out-of-band. Every run overwrites both secrets, which is how a
-# rotated key reaches every repository.
+# so this runs out-of-band. Overwriting on every run is how a rotated key
+# reaches each repository.
 
 set -euo pipefail
 
 HOOK_FIX_APP_ID="${HOOK_FIX_APP_ID:-5422895}"
 
-# Keep in step with the App's installation: a repository listed here but not
-# installed on gets credentials that cannot push.
+# Match the App's installation. A repository listed here without it gets
+# credentials that cannot push.
 REPOS=(
   dungeon-studio/genshin.dungeon.studio
 )
@@ -45,8 +45,7 @@ resolve_private_key_path() {
 
   [[ -r "${path}" ]] || die "cannot read ${path}"
 
-  # A wrong key surfaces only when the first fix push is refused, a long way
-  # from the paste that caused it.
+  # A wrong file otherwise surfaces only when the first fix push is refused.
   grep -q -- '-----BEGIN .*PRIVATE KEY-----' "${path}" ||
     die "${path} is not a PEM private key; see docs/how-to/create-hook-fix-github-app.md"
 
