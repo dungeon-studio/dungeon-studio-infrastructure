@@ -22,10 +22,11 @@ resource "github_repository" "this" {
   has_projects    = false
   has_wiki        = false
   has_discussions = var.has_discussions
-  # Git flow merges release and hotfix branches with merge commits so main
-  # and develop share them; feature branches squash into develop.
+  # Git flow takes a merge commit on every edge. A squashed release shares no
+  # ancestry with develop, so later releases re-present its changes as
+  # conflicts.
   allow_merge_commit          = var.git_flow
-  allow_squash_merge          = true
+  allow_squash_merge          = !var.git_flow
   allow_rebase_merge          = false
   allow_auto_merge            = var.renovate_automerge || var.allow_auto_merge
   allow_update_branch         = true
@@ -91,33 +92,17 @@ locals {
     var.renovate_automerge ? [merge(local.renovate_actor, { bypass_mode = "pull_request" })] : [],
   )
 
-  protected_refs = concat(
-    ["~DEFAULT_BRANCH"],
-    var.git_flow ? ["refs/heads/${local.release_branch}"] : [],
-  )
-
-  # Release and hotfix branches merge back into develop with merge commits,
-  # so develop accepts both methods. Nothing in a ruleset can tell a feature
-  # pull request from a release one, so a feature branch can merge-commit
-  # into develop too.
-  review_refs = merge(
-    {
-      develop = {
-        ref           = "~DEFAULT_BRANCH"
-        merge_methods = var.git_flow ? ["squash", "merge"] : ["squash"]
-      }
-    },
-    var.git_flow ? {
-      main = {
-        ref           = "refs/heads/${local.release_branch}"
-        merge_methods = ["merge"]
-      }
-    } : {},
-  )
+  # Literal refs rather than ~DEFAULT_BRANCH, which would carry develop's
+  # rules onto another branch if the default ever moved. Release branches
+  # carry a release to main, so they take main's protections.
+  develop_refs   = ["refs/heads/${local.default_branch}"]
+  release_refs   = var.git_flow ? ["refs/heads/${local.release_branch}", "refs/heads/release/**"] : []
+  protected_refs = concat(local.develop_refs, local.release_refs)
 
   # Rulesets on GitHub Free cannot restrict which branch a pull request
-  # comes from, so each Git flow repository runs a job by this name that
-  # fails unless a pull request into main comes from release/* or hotfix/*.
+  # comes from, so each Git flow repository runs a job by this name. It fails
+  # a pull request into main unless it comes from release/* or hotfix/*, and
+  # passes every other pull request.
   git_flow_source_check = "Check Git flow source branch"
 
   required_checks = var.required_status_checks == null ? [] : concat(
@@ -125,19 +110,22 @@ locals {
     var.required_status_checks.contexts,
   )
 
+  # Release refs require up-to-date branches whatever develop does: they
+  # take only release and hotfix merges, so Renovate never rebases against
+  # them.
   checks_refs = merge(
     var.required_status_checks != null ? {
       develop = {
-        ref      = "~DEFAULT_BRANCH"
+        refs     = local.develop_refs
         contexts = local.required_checks
         strict   = var.required_status_checks.strict
       }
     } : {},
     var.git_flow ? {
-      main = {
-        ref      = "refs/heads/${local.release_branch}"
+      release = {
+        refs     = local.release_refs
         contexts = concat([local.git_flow_source_check], local.required_checks)
-        strict   = try(var.required_status_checks.strict, false)
+        strict   = true
       }
     } : {},
   )
@@ -213,12 +201,11 @@ resource "github_repository_ruleset" "admin_only" {
   }
 }
 
-# One ruleset per branch because each allows different merge methods. The
-# admin bypasses because a solo maintainer can't satisfy a required review.
+# The admin bypasses because a solo maintainer can't satisfy a required review.
 resource "github_repository_ruleset" "review" {
-  for_each = var.rulesets ? local.review_refs : {}
+  count = var.rulesets ? 1 : 0
 
-  name        = "review-${each.key}"
+  name        = "review"
   repository  = github_repository.this.name
   target      = "branch"
   enforcement = "active"
@@ -227,7 +214,7 @@ resource "github_repository_ruleset" "review" {
 
   conditions {
     ref_name {
-      include = [each.value.ref]
+      include = local.protected_refs
       exclude = []
     }
   }
@@ -245,7 +232,7 @@ resource "github_repository_ruleset" "review" {
     # Code owner review is a separate condition from the review count, so a
     # repo can gate on CODEOWNERS while the count stays at 0.
     pull_request {
-      allowed_merge_methods             = each.value.merge_methods
+      allowed_merge_methods             = var.git_flow ? ["merge"] : ["squash"]
       required_approving_review_count   = 0
       require_code_owner_review         = var.require_code_owner_review
       required_review_thread_resolution = true
@@ -267,7 +254,7 @@ resource "github_repository_ruleset" "checks" {
 
   conditions {
     ref_name {
-      include = [each.value.ref]
+      include = each.value.refs
       exclude = []
     }
   }

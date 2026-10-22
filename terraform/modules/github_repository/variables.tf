@@ -45,9 +45,10 @@ variable "git_flow" {
   description = <<-EOT
     Follow Git flow: develop integrates feature work, main holds releases,
     and only release/* and hotfix/* pull requests merge into main. Creates
-    main, enables merge commits for release and hotfix merges, and protects
-    main alongside develop. Set false only to keep a repository without a
-    main branch unchanged until it adopts Git flow.
+    main, makes every pull request merge with a merge commit, and protects
+    main and release/** alongside develop. Set false only to keep a
+    squash-only repository without a main branch unchanged until it adopts
+    Git flow.
   EOT
 }
 
@@ -68,10 +69,11 @@ variable "required_status_checks" {
   })
   default     = null
   description = <<-EOT
-    Status checks that must pass before merging into develop or main.
-    contexts are matched by check-run name and must come from GitHub
-    Actions; strict requires the branch to be up to date first. Omit to
-    leave develop ungated. Only require check names that are unique on a
+    Status checks that must pass before merging into develop, main, or
+    release/**. contexts are matched by check-run name and must come from
+    GitHub Actions; strict requires a pull request into develop to be up to
+    date first, which main and release/** always require. Omit to leave
+    develop ungated. Only require check names that are unique on a
     pull request — a name shared by several workflows can't be pinned to
     one of them.
 
@@ -89,7 +91,7 @@ variable "require_code_owner_review" {
   default     = false
   description = <<-EOT
     Require an approving review from a code owner before merging into
-    develop or main. Gates a pull request whenever CODEOWNERS assigns an
+    develop, main, or release/**. Gates a pull request whenever CODEOWNERS assigns an
     owner to a changed path; with no .github/CODEOWNERS on that branch it
     gates nothing.
   EOT
@@ -100,7 +102,8 @@ variable "admin_only_updates" {
   default     = true
   description = <<-EOT
     Only the repository admin, and Renovate under renovate_automerge, can
-    update develop or main, whether by push or by merging a pull request.
+    update develop, main, or release/**, whether by push or by merging a
+    pull request.
     Set false once others merge pull requests.
   EOT
 }
