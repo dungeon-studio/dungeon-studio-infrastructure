@@ -35,7 +35,7 @@ pre-commit install
 Every check this repository enforces runs through pre-commit, so that one
 command is the whole local setup.
 
-Two recipes make up the operator surface:
+Three recipes make up the operator surface:
 
 - `just bootstrap` — creates the `dungeon-studio-infrastructure` project, the
   `dungeon-studio-tfstate` state bucket, the Workload Identity Federation pool,
@@ -43,8 +43,13 @@ Two recipes make up the operator surface:
   credentials the infrastructure layer authenticates with. Run it once per
   machine, or to rotate the deployer credentials.
 - `just infrastructure` — local `terraform apply` against the infrastructure
-  layer, run after merging to `develop`. It reads the GitHub App credentials
-  out of Secret Manager, so register the App before the first run.
+  layer. Merging to `develop` applies this layer in continuous integration, so
+  run the recipe only for the first apply after bootstrap or while that
+  workflow is broken. It reads the GitHub App credentials out of Secret
+  Manager, so register the App before the first run.
+- `just configure-hook-fix` — writes the hook-fix App's credentials to the
+  repositories Renovate automerges. Run it after registering the App or
+  rotating its key.
 
 ## Layout
 
@@ -52,7 +57,7 @@ Terraform splits into two layers on credentials and blast radius rather than
 on provider. `terraform/bootstrap/` runs rarely, with elevated human
 credentials, and provisions the state backend; `terraform/infrastructure/`
 holds the steady-state org configuration, consumes what bootstrap produced,
-and is applied after each merge.
+and is applied by continuous integration on each merge to `develop`.
 
 Each layer stores state in its own bucket: `dungeon-studio-tfstate` for
 bootstrap, `dungeon-studio-infrastructure-tfstate` for the infrastructure
@@ -83,10 +88,11 @@ The recipe lists your billing accounts and prompts for the one to attach. Set
 `TF_VAR_billing_account_id` beforehand to skip the prompt; the run then needs
 no terminal.
 
-Every step is idempotent, so a partial failure is safe to re-run. Afterwards
-`terraform -chdir=terraform/bootstrap output` prints the federation provider
-and deployer service account emails that GitHub Actions workflows authenticate
-with.
+Every step is idempotent, so a partial failure is safe to re-run.
+
+Once the GitHub App below is registered, `just infrastructure` sets the
+federation provider and deployer service account emails as the Actions
+variables that workflows authenticate with.
 
 ## Register the GitHub App
 
@@ -101,6 +107,12 @@ state file.
 fills those secrets;
 [Rotate the GitHub App's private key](docs/how-to/rotate-github-app-key.md)
 replaces the key afterwards.
+
+A second App, `dungeon-studio-hook-fix`, pushes pre-commit hook fixes to
+Renovate branches. Its credentials are Actions secrets, not Terraform
+resources, so the key stays out of state.
+[Create the hook-fix GitHub App](docs/how-to/create-hook-fix-github-app.md)
+registers it, sets the secrets, and rotates the key.
 
 ## Contributing
 

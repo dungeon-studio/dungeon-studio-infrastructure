@@ -1,0 +1,124 @@
+# SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
+# SPDX-License-Identifier: MIT
+---
+name: Pull request
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # CI cannot read bootstrap's state (README §Layout), so only this layer
+  # plans.
+  terraform-plan:
+    name: Plan Terraform infrastructure layer
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    # The read-only deployer can read the GitHub App's private key. GitHub
+    # already withholds OIDC tokens from fork pull requests; this keeps code
+    # from a fork away from the deployer even if that default changes.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+
+    # The read-only deployer cannot write a lock, so plan runs -lock=false.
+    # A job that writes this state must join this group, or a plan can read
+    # state mid-write. queue: max queues every waiting run instead of
+    # cancelling all but the newest.
+    concurrency:
+      group: terraform-state
+      queue: max
+
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: write
+
+    env:
+      # renovate: datasource=github-releases depName=hashicorp/terraform extractVersion=^v(?<version>.+)$
+      TERRAFORM_VERSION: '1.16.6'
+
+    defaults:
+      run:
+        working-directory: terraform/infrastructure
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          terraform_wrapper: false
+
+      - name: Authenticate as the read-only deployer
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3.0.0
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOYER_RO_EMAIL }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@aa5489c8933f4cc7a4f7d45035b3b1440c9c10db # v3.0.1
+
+      - name: Export GitHub App credentials
+        run: "${GITHUB_WORKSPACE}/scripts/export-terraform-credentials.sh"
+
+      - name: Initialize Terraform
+        run: terraform init -input=false
+
+      # The comment step reads plan.txt from the workspace root.
+      - name: Plan
+        run: |
+          set -euo pipefail
+          terraform plan -input=false -lock=false -no-color -out=tfplan
+          terraform show -no-color tfplan >"${GITHUB_WORKSPACE}/plan.txt"
+
+      - name: Comment the plan on the pull request
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const fs = require('fs');
+            const plan = fs.readFileSync('plan.txt', 'utf8');
+            const summaryLine = plan.match(/^(No changes\..+|Plan: .+)$/m);
+            const summary = summaryLine ? summaryLine[0] : 'Plan generated';
+            const marker = '<!-- terraform-plan:infrastructure -->';
+            const body = [
+              marker,
+              '## Terraform plan: infrastructure',
+              '',
+              `**${summary}**`,
+              '',
+              '<details>',
+              '<summary>Show full plan output</summary>',
+              '',
+              '```',
+              plan,
+              '```',
+              '</details>',
+            ].join('\n');
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              ...context.repo,
+              issue_number: context.issue.number,
+            });
+            const existing = comments.find((c) => c.body.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                ...context.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                ...context.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
