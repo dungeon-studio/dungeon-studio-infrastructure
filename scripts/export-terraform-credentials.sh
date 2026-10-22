@@ -30,14 +30,20 @@ mask() {
   sed '/^$/d; s|^|::add-mask::|' <<<"$1"
 }
 
-# The heredoc form carries multi-line values. The runner prints every later
-# step's environment, so mask a secret before writing it.
+# The heredoc form carries multi-line values.
 write_env() {
   {
     echo "$1<<__GITHUB_ENV__"
     echo "$2"
     echo "__GITHUB_ENV__"
   } >>"${GITHUB_ENV}"
+}
+
+# The runner prints every later step's environment, so the mask must come
+# first.
+write_secret() {
+  mask "$2"
+  write_env "$1" "$2"
 }
 
 main() {
@@ -48,11 +54,9 @@ main() {
   installation_id="$(read_secret github-app-installation-id)"
   pem="$(read_secret github-app-private-key)"
 
-  mask "${pem}"
-
   write_env GITHUB_APP_ID "${app_id}"
   write_env GITHUB_APP_INSTALLATION_ID "${installation_id}"
-  write_env GITHUB_APP_PEM_FILE "${pem}"
+  write_secret GITHUB_APP_PEM_FILE "${pem}"
 }
 
 main "$@"
