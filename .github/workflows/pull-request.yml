@@ -65,27 +65,8 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@aa5489c8933f4cc7a4f7d45035b3b1440c9c10db # v3.0.1
 
-      # Mirrors scripts/infrastructure.sh: the github provider's app_auth
-      # block reads these from the environment.
       - name: Export GitHub App credentials
-        run: |
-          set -euo pipefail
-          read_secret() {
-            gcloud secrets versions access latest --secret "$1"
-          }
-          app_id="$(read_secret github-app-id)"
-          installation_id="$(read_secret github-app-installation-id)"
-          pem="$(read_secret github-app-private-key)"
-          while IFS= read -r line; do
-            [[ -n "${line}" ]] && echo "::add-mask::${line}"
-          done <<<"${pem}"
-          {
-            echo "GITHUB_APP_ID=${app_id}"
-            echo "GITHUB_APP_INSTALLATION_ID=${installation_id}"
-            echo "GITHUB_APP_PEM_FILE<<PEM_EOF"
-            echo "${pem}"
-            echo "PEM_EOF"
-          } >>"${GITHUB_ENV}"
+        run: scripts/export-terraform-credentials.sh
 
       - name: Initialize Terraform
         run: terraform -chdir="${LAYER}" init -input=false
