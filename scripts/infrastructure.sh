@@ -2,9 +2,9 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 #
-# Post-merge apply for the infrastructure layer. The github provider
-# authenticates as a GitHub App whose credentials terraform/bootstrap/ keeps
-# in Secret Manager.
+# Local apply for the infrastructure layer when CI cannot apply it. The github
+# provider authenticates as a GitHub App whose credentials terraform/bootstrap/
+# keeps in Secret Manager.
 # Reading them into the environment keeps the private key off disk and out of
 # Terraform state.
 

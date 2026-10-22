@@ -42,7 +42,10 @@ jobs:
     env:
       # renovate: datasource=github-releases depName=hashicorp/terraform extractVersion=^v(?<version>.+)$
       TERRAFORM_VERSION: '1.16.6'
-      LAYER: terraform/infrastructure
+
+    defaults:
+      run:
+        working-directory: terraform/infrastructure
 
     steps:
       - name: Checkout repository
@@ -66,16 +69,17 @@ jobs:
         uses: google-github-actions/setup-gcloud@aa5489c8933f4cc7a4f7d45035b3b1440c9c10db # v3.0.1
 
       - name: Export GitHub App credentials
-        run: scripts/export-terraform-credentials.sh
+        run: "${GITHUB_WORKSPACE}/scripts/export-terraform-credentials.sh"
 
       - name: Initialize Terraform
-        run: terraform -chdir="${LAYER}" init -input=false
+        run: terraform init -input=false
 
+      # The comment step reads plan.txt from the workspace root.
       - name: Plan
         run: |
           set -euo pipefail
-          terraform -chdir="${LAYER}" plan -input=false -lock=false -no-color -out=tfplan
-          terraform -chdir="${LAYER}" show -no-color tfplan >plan.txt
+          terraform plan -input=false -lock=false -no-color -out=tfplan
+          terraform show -no-color tfplan >"${GITHUB_WORKSPACE}/plan.txt"
 
       - name: Comment the plan on the pull request
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0

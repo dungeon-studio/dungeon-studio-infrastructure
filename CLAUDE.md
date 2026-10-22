@@ -19,8 +19,9 @@ Maintainer notes (HTML comments are stripped from Claude's context):
 - **Open draft PRs only.** The default branch is `develop`, not
   `main`. Don't push to it; don't merge your own PRs. alunduil
   reviews and merges.
-- **Don't run `terraform apply`.** alunduil runs it post-merge from
-  the local shell. `terraform plan` output in the PR body is welcome.
+- **Don't run `terraform apply`.** Merging to `develop` applies the
+  infrastructure layer in CI; alunduil applies bootstrap by hand
+  because CI cannot reach its state (README §Layout).
 - **Follow-ups land in a new session and a new PR.** A merged PR is
   done — don't keep iterating on it for adjacent work.
 
@@ -35,8 +36,8 @@ product-scoped resource here.
 
 ## Scope discipline
 
-`terraform apply` runs out-of-band post-merge, so an unrelated edit
-in a scoped PR ships infra the reviewer didn't ask for.
+Merging applies the infrastructure layer, so an unrelated edit in a
+scoped PR ships infra the reviewer didn't ask for.
 
 - Confirm scope doesn't overlap sibling or linked issues before
   opening the PR; ask if uncertain.
