@@ -16,19 +16,15 @@ locals {
   allowed_action_patterns = [
     "actions/cache@*",
     "amannn/action-semantic-pull-request@*",
-    "firebaseextended/action-hosting-deploy@v0",
+    "dorny/paths-filter@*",
     "lycheeverse/lychee-action@*",
     "peter-evans/create-issue-from-file@*",
     "pnpm/action-setup@*",
     "pre-commit/action@*",
-    "release-drafter/*",
+    "release-drafter/release-drafter/autolabeler@*",
+    "release-drafter/release-drafter@*",
     "zizmorcore/zizmor-action@*",
   ]
-}
-
-import {
-  to = github_actions_organization_permissions.org
-  id = local.github_owner
 }
 
 resource "github_actions_organization_permissions" "org" {
