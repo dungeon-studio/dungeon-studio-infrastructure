@@ -37,7 +37,10 @@ variable "required_status_checks" {
 
     contexts are GitHub Actions check-run names, each unique on a pull
     request. A required check that stops reporting blocks every merge,
-    the admin's included.
+    the admin's included. Each must report on every pull request and fail
+    only on what the pull request changes: a path-gated job leaves most
+    pull requests pending forever, and a dependency scan fails on newly
+    disclosed advisories, blocking merges that changed nothing.
 
     strict requires a pull request into develop to be up to date; main
     and release/** always require it.

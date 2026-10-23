@@ -12,10 +12,6 @@ module "genshin_dungeon_studio" {
   renovate_automerge        = true
 
   required_status_checks = {
-    # A required check must report on every pull request and fail only on
-    # what the pull request changes. Path-gated jobs skip most pull requests,
-    # leaving them pending forever. Dependency scans fail on newly disclosed
-    # advisories, blocking merges that changed nothing.
     contexts = [
       "Audit workflows",
       "Build and test workspace",
