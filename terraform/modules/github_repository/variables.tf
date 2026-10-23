@@ -27,8 +27,8 @@ variable "topics" {
 variable "org_allowed_action_patterns" {
   type        = list(string)
   description = <<-EOT
-    The org's Actions allowlist patterns. Pass the org permissions
-    resource's attribute rather than a copy, so the org allowlist applies
+    The org's Actions allowlist patterns. Pass a value read from the org
+    permissions resource rather than a copy, so the org allowlist applies
     before the repository's.
   EOT
 }

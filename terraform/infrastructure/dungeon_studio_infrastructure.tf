@@ -11,7 +11,7 @@ module "dungeon_studio_infrastructure" {
   name        = local.infrastructure_repository
   description = "Organization infrastructure as code for Dungeon Studio, managed with Terraform."
 
-  org_allowed_action_patterns = github_actions_organization_permissions.org.allowed_actions_config[0].patterns_allowed
+  org_allowed_action_patterns = local.org_allowed_action_patterns
 }
 
 import {
