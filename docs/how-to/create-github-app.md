@@ -26,6 +26,8 @@ the `dungeon-studio-infrastructure` project.
 
    - **Repository → Administration**, read and write: repositories, their
      settings, and repository rulesets.
+   - **Repository → Contents**, read and write: the long-lived `main`
+     branch a Git flow repository starts from `develop`.
    - **Repository → Issues**, read and write: the shared label set.
    - **Repository → Variables**, read and write: the Actions variables CI
      authenticates to GCP with.
