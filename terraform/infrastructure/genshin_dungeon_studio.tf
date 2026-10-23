@@ -29,6 +29,8 @@ module "genshin_dungeon_studio" {
   renovate_automerge        = true
   has_discussions           = true
 
+  org_allowed_action_patterns = local.org_allowed_action_patterns
+
   # The copilot environment stays undeclared: GitHub manages it for the
   # Copilot coding agent.
   environments = {

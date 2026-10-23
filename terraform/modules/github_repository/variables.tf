@@ -24,6 +24,14 @@ variable "topics" {
   description = "GitHub topics applied to the repository."
 }
 
+variable "org_allowed_action_patterns" {
+  type        = list(string)
+  description = <<-EOT
+    The org's Actions allowlist patterns. Read them from the org
+    permissions resource so the org allowlist applies first.
+  EOT
+}
+
 variable "required_status_checks" {
   type = object({
     ci_results_check = optional(bool, false)
@@ -137,8 +145,8 @@ variable "legacy" {
     merge commits and protected main and release/**.
 
     allowed_action_patterns: owner/repo@* patterns for a repository
-    allowlist inside the org's. GitHub-owned and verified-creator actions
-    stay allowed.
+    allowlist inside the org's, in place of org_allowed_action_patterns.
+    GitHub-owned and verified-creator actions stay allowed.
 
     can_approve_pull_request_reviews: workflows' GITHUB_TOKEN may create
     and approve pull requests.

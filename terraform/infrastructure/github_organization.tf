@@ -39,3 +39,8 @@ resource "github_actions_organization_permissions" "org" {
     patterns_allowed     = local.allowed_action_patterns
   }
 }
+
+locals {
+  # The resource reference orders every repository's allowlist after the org's.
+  org_allowed_action_patterns = github_actions_organization_permissions.org.allowed_actions_config[0].patterns_allowed
+}
