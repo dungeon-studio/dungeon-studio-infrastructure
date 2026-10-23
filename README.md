@@ -40,9 +40,9 @@ Three recipes make up the operator surface:
 - `just bootstrap` — creates the `dungeon-studio-infrastructure` project, the
   `dungeon-studio-tfstate` state bucket, the Workload Identity Federation pool,
   and the deployer service accounts, then prompts for the GitHub App
-  credentials the infrastructure layer authenticates with and the game data
-  App's, which it copies to genshin.dungeon.studio. Run it once per machine,
-  or to rotate the deployer credentials.
+  credentials the infrastructure layer authenticates with. It also stores the
+  game data App's credentials and copies them to genshin.dungeon.studio. Run
+  it once per machine, or to rotate the deployer credentials.
 - `just infrastructure` — local `terraform apply` against the infrastructure
   layer. Merging to `develop` applies this layer in continuous integration, so
   run the recipe only for the first apply after bootstrap or while that

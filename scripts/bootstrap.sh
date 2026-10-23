@@ -203,9 +203,8 @@ read_secret() {
   gcloud secrets versions access latest --secret "$1" --project "${PROJECT_ID}"
 }
 
-# Sets only what the repository lacks, so a re-run never replaces a value
-# there; rotation pushes the new key by hand. kind is gh's `variable` or
-# `secret`.
+# A re-run never replaces a value already on the repository. kind is
+# `variable` or `secret`.
 ensure_actions_value() {
   local repo="$1" kind="$2" name="$3" secret="$4"
 
@@ -214,7 +213,7 @@ ensure_actions_value() {
     echo "${name} already set on ${repo}."
   elif secret_is_populated "${secret}"; then
     echo "Setting ${name} on ${repo}"
-    # stdin keeps the key out of the process list.
+    # stdin keeps the value out of the process list.
     read_secret "${secret}" | gh "${kind}" set "${name}" --repo "${repo}"
   fi
 }

@@ -65,9 +65,6 @@ in Secret Manager, and sets them on genshin.dungeon.studio. Export
 `GAME_DATA_APP_CLIENT_ID` and `GAME_DATA_APP_PRIVATE_KEY_PATH` beforehand to
 answer the prompts without a terminal.
 
-Re-running changes nothing: it skips populated secrets and leaves the
-variable and secret on genshin as they are.
-
 Then destroy the downloaded key:
 
 ```sh
@@ -87,7 +84,7 @@ The `Refresh game data` job's token step succeeds.
 ## Rotate the private key
 
 An App holds two private keys at once, so the replacement works before the
-old one goes away. `just bootstrap` leaves populated values alone, so rotation
+old one goes away. `just bootstrap` never replaces a stored value, so rotation
 goes through `gcloud` and `gh`.
 
 1. Generate a second private key under **Private keys** on the App's General
