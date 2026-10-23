@@ -28,7 +28,7 @@ variable "required_status_checks" {
   type = object({
     ci_results_check = optional(bool, false)
     contexts         = optional(list(string), [])
-    strict           = optional(bool, true)
+    strict           = optional(bool)
   })
   default     = null
   description = <<-EOT
@@ -36,11 +36,14 @@ variable "required_status_checks" {
     release/**. Omit to leave develop ungated.
 
     contexts are GitHub Actions check-run names, each unique on a pull
-    request. A required check that stops reporting blocks every merge,
-    the admin's included.
+    request. A missing check blocks every merge, the admin's included,
+    so leave out path-gated jobs. A check must fail only on what the pull
+    request changes, so leave out dependency scans: they fail on newly
+    disclosed advisories.
 
     strict requires a pull request into develop to be up to date; main
-    and release/** always require it.
+    and release/** always require it. It defaults to false under
+    renovate_automerge, true otherwise.
 
     ci_results_check requires the aggregator job "Check CI results"
     instead of matrix legs, whose names change with the versions they
@@ -115,8 +118,6 @@ variable "environments" {
 variable "legacy" {
   type = object({
     squash_only                      = optional(bool, false)
-    hand_made_rulesets               = optional(bool, false)
-    allow_auto_merge                 = optional(bool, false)
     allowed_action_patterns          = optional(list(string))
     can_approve_pull_request_reviews = optional(bool, false)
     dependabot_security_updates      = optional(bool, false)
@@ -129,11 +130,6 @@ variable "legacy" {
 
     squash_only: squash merges and no main branch, in place of Git flow's
     merge commits and protected main and release/**.
-
-    hand_made_rulesets: the repository's own rulesets, in place of this
-    module's.
-
-    allow_auto_merge: GitHub auto-merge without renovate_automerge.
 
     allowed_action_patterns: owner/repo@* patterns for a repository
     allowlist inside the org's. GitHub-owned and verified-creator actions
