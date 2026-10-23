@@ -49,8 +49,8 @@ the `dungeon-studio-infrastructure` project.
 ## Install the App on the org
 
 1. From the App's **Install App** tab, install it on `dungeon-studio` with
-   **All repositories** selected. Terraform manages every repository in the
-   org, and a subset leaves resources it cannot refresh.
+   **All repositories** selected. Terraform manages every active repository
+   in the org, and a subset leaves resources it cannot refresh.
 
 2. Record the installation ID. It is the last path segment of the URL you
    land on:
