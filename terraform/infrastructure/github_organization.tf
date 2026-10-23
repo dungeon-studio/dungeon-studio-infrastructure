@@ -19,6 +19,7 @@ locals {
     "dorny/paths-filter@*",
     "lycheeverse/lychee-action@*",
     "peter-evans/create-issue-from-file@*",
+    "peter-evans/create-pull-request@*",
     "pnpm/action-setup@*",
     "pre-commit/action@*",
     "release-drafter/release-drafter/autolabeler@*",
