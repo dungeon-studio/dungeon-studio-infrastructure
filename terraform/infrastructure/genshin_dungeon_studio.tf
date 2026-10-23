@@ -64,22 +64,26 @@ import {
   id = "genshin.dungeon.studio"
 }
 
+locals {
+  genshin_hand_made_environments = {
+    core    = { pattern = "develop", policy_id = 43082121 }
+    dev     = { pattern = "develop", policy_id = 42899594 }
+    staging = { pattern = "release/*", policy_id = 43465448 }
+  }
+}
+
 import {
-  for_each = toset(["core", "dev", "staging"])
+  for_each = local.genshin_hand_made_environments
 
   to = module.genshin_dungeon_studio.github_repository_environment.this[each.key]
   id = "genshin.dungeon.studio:${each.key}"
 }
 
 import {
-  for_each = {
-    "core:develop"      = 43082121
-    "dev:develop"       = 42899594
-    "staging:release/*" = 43465448
-  }
+  for_each = local.genshin_hand_made_environments
 
-  to = module.genshin_dungeon_studio.github_repository_environment_deployment_policy.this[each.key]
-  id = "genshin.dungeon.studio:${split(":", each.key)[0]}:${each.value}"
+  to = module.genshin_dungeon_studio.github_repository_environment_deployment_policy.this["${each.key}:${each.value.pattern}"]
+  id = "genshin.dungeon.studio:${each.key}:${each.value.policy_id}"
 }
 
 data "github_app" "actions" {
