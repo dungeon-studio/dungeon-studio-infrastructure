@@ -27,10 +27,6 @@ module "genshin_dungeon_studio" {
       "Smoke-test dev stack",
       "Test against Firestore",
     ]
-    # Requiring up-to-date branches makes Renovate rebase whenever develop
-    # moves. Each rebase can pull a newer release and restart its
-    # minimumReleaseAge wait, so the pull request may never merge.
-    strict = false
   }
 
   legacy = {

@@ -28,7 +28,7 @@ variable "required_status_checks" {
   type = object({
     ci_results_check = optional(bool, false)
     contexts         = optional(list(string), [])
-    strict           = optional(bool, true)
+    strict           = optional(bool)
   })
   default     = null
   description = <<-EOT
@@ -43,7 +43,8 @@ variable "required_status_checks" {
     disclosed advisories, blocking merges that changed nothing.
 
     strict requires a pull request into develop to be up to date; main
-    and release/** always require it.
+    and release/** always require it. It defaults on, or off under
+    renovate_automerge.
 
     ci_results_check requires the aggregator job "Check CI results"
     instead of matrix legs, whose names change with the versions they

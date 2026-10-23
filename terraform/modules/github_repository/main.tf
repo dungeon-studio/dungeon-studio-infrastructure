@@ -235,14 +235,16 @@ locals {
     var.required_status_checks.contexts,
   )
 
-  # Release refs can always require up-to-date branches: Renovate never
-  # targets them, so no rebase loop resets its release-age wait.
+  # Requiring up-to-date branches makes Renovate rebase whenever the target
+  # moves. Each rebase can pull a newer release and restart its
+  # minimumReleaseAge wait, so the pull request may never merge. Release refs
+  # can always require it: Renovate never targets them.
   checks_refs = {
     for name, policy in {
       develop = {
         refs     = local.develop_refs
         contexts = local.required_checks
-        strict   = try(var.required_status_checks.strict, false)
+        strict   = coalesce(try(var.required_status_checks.strict, null), !var.renovate_automerge)
       }
       release = {
         refs     = local.flow.release_refs
