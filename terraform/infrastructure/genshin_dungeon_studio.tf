@@ -1,10 +1,14 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
+locals {
+  genshin_repository = "genshin.dungeon.studio"
+}
+
 module "genshin_dungeon_studio" {
   source = "../modules/github_repository"
 
-  name            = "genshin.dungeon.studio"
+  name            = local.genshin_repository
   description     = "Genshin Impact team builder — manage your character and weapon collection, build team compositions, and plan your roster."
   has_discussions = true
 
@@ -41,27 +45,27 @@ module "genshin_dungeon_studio" {
 
 import {
   to = module.genshin_dungeon_studio.github_repository.this
-  id = "genshin.dungeon.studio"
+  id = local.genshin_repository
 }
 
 import {
   to = module.genshin_dungeon_studio.github_branch_default.this
-  id = "genshin.dungeon.studio"
+  id = local.genshin_repository
 }
 
 import {
   to = module.genshin_dungeon_studio.github_repository_dependabot_security_updates.this
-  id = "genshin.dungeon.studio"
+  id = local.genshin_repository
 }
 
 import {
   to = module.genshin_dungeon_studio.github_workflow_repository_permissions.this
-  id = "genshin.dungeon.studio"
+  id = local.genshin_repository
 }
 
 import {
   to = module.genshin_dungeon_studio.github_actions_repository_permissions.this
-  id = "genshin.dungeon.studio"
+  id = local.genshin_repository
 }
 
 locals {
@@ -76,14 +80,14 @@ import {
   for_each = local.genshin_hand_made_environments
 
   to = module.genshin_dungeon_studio.github_repository_environment.this[each.key]
-  id = "genshin.dungeon.studio:${each.key}"
+  id = "${local.genshin_repository}:${each.key}"
 }
 
 import {
   for_each = local.genshin_hand_made_environments
 
   to = module.genshin_dungeon_studio.github_repository_environment_deployment_policy.this["${each.key}:${each.value.pattern}"]
-  id = "genshin.dungeon.studio:${each.key}:${each.value.policy_id}"
+  id = "${local.genshin_repository}:${each.key}:${each.value.policy_id}"
 }
 
 data "github_app" "actions" {
@@ -118,7 +122,7 @@ locals {
 # take a ruleset of their own.
 resource "github_repository_ruleset" "genshin_develop_ci" {
   name        = "Require CI on develop"
-  repository  = "genshin.dungeon.studio"
+  repository  = local.genshin_repository
   target      = "branch"
   enforcement = "active"
 
