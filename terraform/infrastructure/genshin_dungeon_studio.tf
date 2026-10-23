@@ -8,6 +8,27 @@ module "genshin_dungeon_studio" {
   description     = "Genshin Impact team builder — manage your character and weapon collection, build team compositions, and plan your roster."
   has_discussions = true
 
+  # The copilot environment stays undeclared: GitHub manages it for the
+  # Copilot coding agent.
+  environments = {
+    # core holds DNS for every environment. Applying it from release branches
+    # too would let each branch revert the other's records.
+    core = {
+      deployment_branches = ["develop"]
+      can_admins_bypass   = false
+    }
+    dev = {
+      deployment_branches = ["develop"]
+    }
+    staging = {
+      deployment_branches = ["release/*"]
+    }
+    prod = {
+      deployment_branches = ["main"]
+      reviewers           = ["alunduil"]
+    }
+  }
+
   legacy = {
     squash_only                      = true
     hand_made_rulesets               = true
@@ -41,6 +62,28 @@ import {
 import {
   to = module.genshin_dungeon_studio.github_actions_repository_permissions.this
   id = "genshin.dungeon.studio"
+}
+
+locals {
+  genshin_hand_made_environments = {
+    core    = { pattern = "develop", policy_id = 43082121 }
+    dev     = { pattern = "develop", policy_id = 42899594 }
+    staging = { pattern = "release/*", policy_id = 43465448 }
+  }
+}
+
+import {
+  for_each = local.genshin_hand_made_environments
+
+  to = module.genshin_dungeon_studio.github_repository_environment.this[each.key]
+  id = "genshin.dungeon.studio:${each.key}"
+}
+
+import {
+  for_each = local.genshin_hand_made_environments
+
+  to = module.genshin_dungeon_studio.github_repository_environment_deployment_policy.this["${each.key}:${each.value.pattern}"]
+  id = "genshin.dungeon.studio:${each.key}:${each.value.policy_id}"
 }
 
 data "github_app" "actions" {
