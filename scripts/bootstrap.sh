@@ -22,7 +22,6 @@ die() {
 check_preconditions() {
   command -v gcloud >/dev/null || die "gcloud not found in PATH"
   command -v terraform >/dev/null || die "terraform not found in PATH"
-  command -v gh >/dev/null || die "gh not found in PATH"
 }
 
 # Both the billing link below and `terraform apply` read this, and each would
@@ -124,7 +123,7 @@ add_secret_version() {
 }
 
 ensure_github_app_identifier() {
-  local secret="$1" label="$2" value="$3" pattern="$4" doc="$5"
+  local secret="$1" label="$2" value="$3"
 
   if secret_is_populated "${secret}"; then
     echo "${secret} already set."
@@ -136,17 +135,18 @@ ensure_github_app_identifier() {
   fi
 
   if [[ -z "${value}" ]]; then
-    echo "Leaving ${secret} empty; see ${doc}"
+    echo "Leaving ${secret} empty; see docs/how-to/create-github-app.md"
     return
   fi
 
-  [[ "${value}" =~ ${pattern} ]] || die "${label} must match ${pattern}, got '${value}'"
+  [[ "${value}" =~ ^[0-9]+$ ]] || die "${label} must be digits, got '${value}'"
 
   printf '%s' "${value}" | add_secret_version "${secret}"
 }
 
 ensure_github_app_private_key() {
-  local secret="$1" label="$2" path="$3" doc="$4"
+  local secret="$1"
+  local path="${GITHUB_APP_PRIVATE_KEY_PATH:-}"
 
   if secret_is_populated "${secret}"; then
     echo "${secret} already set."
@@ -154,11 +154,11 @@ ensure_github_app_private_key() {
   fi
 
   if [[ -z "${path}" && -t 0 ]]; then
-    read -rp "Path to the ${label} .pem (Enter to skip): " path
+    read -rp "Path to the App's private key .pem (Enter to skip): " path
   fi
 
   if [[ -z "${path}" ]]; then
-    echo "Leaving ${secret} empty; see ${doc}"
+    echo "Leaving ${secret} empty; see docs/how-to/create-github-app.md"
     return
   fi
 
@@ -173,58 +173,17 @@ ensure_github_app_private_key() {
     die "${path} is not a PEM private key"
 
   add_secret_version "${secret}" <"${path}"
-  echo "Shred ${path} once the App authenticates with it."
+  echo "Shred ${path} once the infrastructure layer authenticates."
 }
 
 # The values only exist once the App is registered, which is a browser action,
 # so a run before that legitimately leaves the secrets empty.
 ensure_github_app_secrets() {
-  local doc="docs/how-to/create-github-app.md"
-
   ensure_github_app_identifier github-app-id \
-    "App ID" "${GITHUB_APP_ID:-}" '^[0-9]+$' "${doc}"
+    "App ID" "${GITHUB_APP_ID:-}"
   ensure_github_app_identifier github-app-installation-id \
-    "Installation ID" "${GITHUB_APP_INSTALLATION_ID:-}" '^[0-9]+$' "${doc}"
-  ensure_github_app_private_key github-app-private-key \
-    "App's private key" "${GITHUB_APP_PRIVATE_KEY_PATH:-}" "${doc}"
-}
-
-ensure_game_data_app_secrets() {
-  local doc="docs/how-to/create-game-data-github-app.md"
-
-  ensure_github_app_identifier game-data-app-client-id \
-    "Game data App client ID" "${GAME_DATA_APP_CLIENT_ID:-}" \
-    '^Iv[[:alnum:].]+$' "${doc}"
-  ensure_github_app_private_key game-data-app-private-key \
-    "game data App's private key" "${GAME_DATA_APP_PRIVATE_KEY_PATH:-}" "${doc}"
-}
-
-read_secret() {
-  gcloud secrets versions access latest --secret "$1" --project "${PROJECT_ID}"
-}
-
-# A re-run never replaces a value already on the repository. kind is
-# `variable` or `secret`.
-ensure_actions_value() {
-  local repo="$1" kind="$2" name="$3" secret="$4"
-
-  if gh "${kind}" list --repo "${repo}" --json name --jq '.[].name' |
-    grep -Fxq "${name}"; then
-    echo "${name} already set on ${repo}."
-  elif secret_is_populated "${secret}"; then
-    echo "Setting ${name} on ${repo}"
-    # stdin keeps the value out of the process list.
-    read_secret "${secret}" | gh "${kind}" set "${name}" --repo "${repo}"
-  fi
-}
-
-ensure_genshin_game_data_credentials() {
-  local repo="dungeon-studio/genshin.dungeon.studio"
-
-  ensure_actions_value "${repo}" variable \
-    GAME_DATA_APP_CLIENT_ID game-data-app-client-id
-  ensure_actions_value "${repo}" secret \
-    GAME_DATA_APP_PRIVATE_KEY game-data-app-private-key
+    "Installation ID" "${GITHUB_APP_INSTALLATION_ID:-}"
+  ensure_github_app_private_key github-app-private-key
 }
 
 main() {
@@ -237,8 +196,6 @@ main() {
   ensure_bootstrap_state_bucket
   apply_bootstrap_layer
   ensure_github_app_secrets
-  ensure_game_data_app_secrets
-  ensure_genshin_game_data_credentials
 }
 
 main "$@"
