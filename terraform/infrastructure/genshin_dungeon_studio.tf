@@ -8,6 +8,27 @@ module "genshin_dungeon_studio" {
   description     = "Genshin Impact team builder — manage your character and weapon collection, build team compositions, and plan your roster."
   has_discussions = true
 
+  # GitHub creates and manages the copilot environment for the Copilot coding
+  # agent, so it stays undeclared.
+  environments = {
+    # core holds DNS for every environment. Applying it from a release branch
+    # as well as develop would revert whichever branch applied last.
+    core = {
+      deployment_branches = ["develop"]
+      can_admins_bypass   = false
+    }
+    dev = {
+      deployment_branches = ["develop"]
+    }
+    staging = {
+      deployment_branches = ["release/*"]
+    }
+    prod = {
+      deployment_branches = ["main"]
+      reviewers           = ["alunduil"]
+    }
+  }
+
   legacy = {
     squash_only                      = true
     hand_made_rulesets               = true
@@ -41,6 +62,24 @@ import {
 import {
   to = module.genshin_dungeon_studio.github_actions_repository_permissions.this
   id = "genshin.dungeon.studio"
+}
+
+import {
+  for_each = toset(["core", "dev", "staging"])
+
+  to = module.genshin_dungeon_studio.github_repository_environment.this[each.key]
+  id = "genshin.dungeon.studio:${each.key}"
+}
+
+import {
+  for_each = {
+    "core:develop"      = 43082121
+    "dev:develop"       = 42899594
+    "staging:release/*" = 43465448
+  }
+
+  to = module.genshin_dungeon_studio.github_repository_environment_deployment_policy.this[each.key]
+  id = "genshin.dungeon.studio:${split(":", each.key)[0]}:${each.value}"
 }
 
 data "github_app" "actions" {
