@@ -373,18 +373,16 @@ resource "github_workflow_repository_permissions" "this" {
 }
 
 # Declared because destroying it resets the repository to allow every action,
-# whatever the org allowlist says.
+# whatever the org allowlist says. Always "selected": GitHub rejects "all"
+# under an org that selects, so the repository repeats the org's allowlist.
 resource "github_actions_repository_permissions" "this" {
   repository      = github_repository.this.name
-  allowed_actions = var.legacy.allowed_action_patterns == null ? "all" : "selected"
+  allowed_actions = "selected"
 
-  dynamic "allowed_actions_config" {
-    for_each = var.legacy.allowed_action_patterns == null ? [] : [var.legacy.allowed_action_patterns]
-    content {
-      github_owned_allowed = true
-      verified_allowed     = true
-      patterns_allowed     = allowed_actions_config.value
-    }
+  allowed_actions_config {
+    github_owned_allowed = true
+    verified_allowed     = true
+    patterns_allowed     = coalesce(var.legacy.allowed_action_patterns, var.org_allowed_action_patterns)
   }
 }
 
