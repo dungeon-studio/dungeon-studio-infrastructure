@@ -4,7 +4,6 @@
 locals {
   develop_branch = "develop"
   main_branch    = "main"
-  rulesets       = !var.legacy.hand_made_rulesets
 
   # A literal ref, because ~DEFAULT_BRANCH would move develop's rules to
   # whichever branch became the default.
@@ -47,7 +46,7 @@ resource "github_repository" "this" {
   allow_merge_commit          = contains(local.flow.merge_methods, "merge")
   allow_squash_merge          = contains(local.flow.merge_methods, "squash")
   allow_rebase_merge          = false
-  allow_auto_merge            = var.renovate_automerge || var.legacy.allow_auto_merge
+  allow_auto_merge            = var.renovate_automerge
   allow_update_branch         = true
   squash_merge_commit_title   = "PR_TITLE"
   squash_merge_commit_message = "PR_BODY"
@@ -115,8 +114,6 @@ locals {
 }
 
 resource "github_repository_ruleset" "default" {
-  count = local.rulesets ? 1 : 0
-
   name        = "default"
   repository  = github_repository.this.name
   target      = "branch"
@@ -152,7 +149,7 @@ resource "github_repository_ruleset" "default" {
 # Merging a pull request updates the branch too, so only bypass actors can
 # merge.
 resource "github_repository_ruleset" "admin_only" {
-  count = local.rulesets && var.admin_only_updates ? 1 : 0
+  count = var.admin_only_updates ? 1 : 0
 
   name        = "admin-only"
   repository  = github_repository.this.name
@@ -184,8 +181,6 @@ resource "github_repository_ruleset" "admin_only" {
 
 # The admin bypasses because a solo maintainer can't satisfy a required review.
 resource "github_repository_ruleset" "review" {
-  count = local.rulesets ? 1 : 0
-
   name        = "review"
   repository  = github_repository.this.name
   target      = "branch"
@@ -235,14 +230,16 @@ locals {
     var.required_status_checks.contexts,
   )
 
-  # Release refs can always require up-to-date branches: Renovate never
-  # targets them, so no rebase loop resets its release-age wait.
+  # Requiring up-to-date branches makes Renovate rebase whenever the target
+  # moves. Each rebase can pull a newer release and restart its
+  # minimumReleaseAge wait, so the pull request may never merge. Renovate
+  # never targets release refs, so they avoid the loop.
   checks_refs = {
     for name, policy in {
       develop = {
         refs     = local.develop_refs
         contexts = local.required_checks
-        strict   = try(var.required_status_checks.strict, false)
+        strict   = coalesce(try(var.required_status_checks.strict, null), !var.renovate_automerge)
       }
       release = {
         refs     = local.flow.release_refs
@@ -256,7 +253,7 @@ locals {
 # No bypass actors: a merge that bypasses any ruleset skips every rule its
 # merger can bypass, so merges past admin-only would skip these checks too.
 resource "github_repository_ruleset" "checks" {
-  for_each = local.rulesets ? local.checks_refs : {}
+  for_each = local.checks_refs
 
   name        = "checks-${each.key}"
   repository  = github_repository.this.name
@@ -292,7 +289,7 @@ resource "github_repository_ruleset" "checks" {
 # Without this, anyone who can push to a Renovate branch could add commits to a
 # pull request Renovate then merges past review.
 resource "github_repository_ruleset" "renovate" {
-  count = local.rulesets && var.renovate_automerge ? 1 : 0
+  count = var.renovate_automerge ? 1 : 0
 
   name        = "renovate"
   repository  = github_repository.this.name
@@ -324,8 +321,6 @@ resource "github_repository_ruleset" "renovate" {
 # tag leaves the registry and the repository silently disagreeing. The admin
 # bypass keeps a botched tag fixable.
 resource "github_repository_ruleset" "immutable_tags" {
-  count = local.rulesets ? 1 : 0
-
   name        = "immutable-tags"
   repository  = github_repository.this.name
   target      = "tag"
