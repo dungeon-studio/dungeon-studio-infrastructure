@@ -8,11 +8,11 @@ module "genshin_dungeon_studio" {
   description     = "Genshin Impact team builder — manage your character and weapon collection, build team compositions, and plan your roster."
   has_discussions = true
 
-  # GitHub creates and manages the copilot environment for the Copilot coding
-  # agent, so it stays undeclared.
+  # The copilot environment stays undeclared: GitHub manages it for the
+  # Copilot coding agent.
   environments = {
-    # core holds DNS for every environment. Applying it from a release branch
-    # as well as develop would revert whichever branch applied last.
+    # core holds DNS for every environment. Applying it from release branches
+    # too would let each branch revert the other's records.
     core = {
       deployment_branches = ["develop"]
       can_admins_bypass   = false
