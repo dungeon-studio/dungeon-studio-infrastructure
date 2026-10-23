@@ -203,27 +203,29 @@ read_secret() {
   gcloud secrets versions access latest --secret "$1" --project "${PROJECT_ID}"
 }
 
-# Sets only what genshin lacks, so a re-run never replaces a value there;
-# rotation pushes the new key by hand.
+# Sets only what the repository lacks, so a re-run never replaces a value
+# there; rotation pushes the new key by hand. kind is gh's `variable` or
+# `secret`.
+ensure_actions_value() {
+  local repo="$1" kind="$2" name="$3" secret="$4"
+
+  if gh "${kind}" list --repo "${repo}" --json name --jq '.[].name' |
+    grep -Fxq "${name}"; then
+    echo "${name} already set on ${repo}."
+  elif secret_is_populated "${secret}"; then
+    echo "Setting ${name} on ${repo}"
+    # stdin keeps the key out of the process list.
+    read_secret "${secret}" | gh "${kind}" set "${name}" --repo "${repo}"
+  fi
+}
+
 ensure_genshin_game_data_credentials() {
   local repo="dungeon-studio/genshin.dungeon.studio"
 
-  if gh variable get GAME_DATA_APP_CLIENT_ID --repo "${repo}" >/dev/null 2>&1; then
-    echo "GAME_DATA_APP_CLIENT_ID already set on ${repo}."
-  elif secret_is_populated game-data-app-client-id; then
-    echo "Setting GAME_DATA_APP_CLIENT_ID on ${repo}"
-    read_secret game-data-app-client-id |
-      gh variable set GAME_DATA_APP_CLIENT_ID --repo "${repo}"
-  fi
-
-  if gh api --silent "repos/${repo}/actions/secrets/GAME_DATA_APP_PRIVATE_KEY" 2>/dev/null; then
-    echo "GAME_DATA_APP_PRIVATE_KEY already set on ${repo}."
-  elif secret_is_populated game-data-app-private-key; then
-    echo "Setting GAME_DATA_APP_PRIVATE_KEY on ${repo}"
-    # stdin keeps the key out of the process list.
-    read_secret game-data-app-private-key |
-      gh secret set GAME_DATA_APP_PRIVATE_KEY --repo "${repo}"
-  fi
+  ensure_actions_value "${repo}" variable \
+    GAME_DATA_APP_CLIENT_ID game-data-app-client-id
+  ensure_actions_value "${repo}" secret \
+    GAME_DATA_APP_PRIVATE_KEY game-data-app-private-key
 }
 
 main() {
