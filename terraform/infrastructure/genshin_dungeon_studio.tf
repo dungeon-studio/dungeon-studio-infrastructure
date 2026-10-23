@@ -36,31 +36,6 @@ module "genshin_dungeon_studio" {
   }
 }
 
-import {
-  to = module.genshin_dungeon_studio.github_repository.this
-  id = "genshin.dungeon.studio"
-}
-
-import {
-  to = module.genshin_dungeon_studio.github_branch_default.this
-  id = "genshin.dungeon.studio"
-}
-
-import {
-  to = module.genshin_dungeon_studio.github_repository_dependabot_security_updates.this
-  id = "genshin.dungeon.studio"
-}
-
-import {
-  to = module.genshin_dungeon_studio.github_workflow_repository_permissions.this
-  id = "genshin.dungeon.studio"
-}
-
-import {
-  to = module.genshin_dungeon_studio.github_actions_repository_permissions.this
-  id = "genshin.dungeon.studio"
-}
-
 moved {
   from = github_repository_ruleset.genshin_develop_ci
   to   = module.genshin_dungeon_studio.github_repository_ruleset.checks["develop"]
