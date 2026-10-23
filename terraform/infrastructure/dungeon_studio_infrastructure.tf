@@ -1,6 +1,38 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
+module "dungeon_studio_infrastructure" {
+  source = "../modules/github_repository"
+
+  name        = "dungeon-studio-infrastructure"
+  description = "Organization infrastructure as code for Dungeon Studio, managed with Terraform."
+}
+
+import {
+  to = module.dungeon_studio_infrastructure.github_repository.this
+  id = "dungeon-studio-infrastructure"
+}
+
+import {
+  to = module.dungeon_studio_infrastructure.github_branch_default.this
+  id = "dungeon-studio-infrastructure"
+}
+
+import {
+  to = module.dungeon_studio_infrastructure.github_repository_dependabot_security_updates.this
+  id = "dungeon-studio-infrastructure"
+}
+
+import {
+  to = module.dungeon_studio_infrastructure.github_workflow_repository_permissions.this
+  id = "dungeon-studio-infrastructure"
+}
+
+import {
+  to = module.dungeon_studio_infrastructure.github_actions_repository_permissions.this
+  id = "dungeon-studio-infrastructure"
+}
+
 # None of these is secret. Actions masks secrets in workflow logs, which would
 # hide these values while debugging a failed federation.
 resource "github_actions_variable" "gcp_deployer" {
