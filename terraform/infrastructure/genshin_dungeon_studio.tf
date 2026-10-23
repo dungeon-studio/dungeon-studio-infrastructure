@@ -21,6 +21,7 @@ module "genshin_dungeon_studio" {
       "Build and test workspace",
       "Check pull request title",
       "Check schema compatibility",
+      "Plan infrastructure",
       "Run end-to-end tests",
       "Run pre-commit hooks",
       "Scan and smoke-test container",
