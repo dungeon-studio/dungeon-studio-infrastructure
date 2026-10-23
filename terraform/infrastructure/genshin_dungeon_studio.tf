@@ -4,12 +4,8 @@
 module "genshin_dungeon_studio" {
   source = "../modules/github_repository"
 
-  name            = "genshin.dungeon.studio"
-  description     = "Genshin Impact team builder — manage your character and weapon collection, build team compositions, and plan your roster."
-  has_discussions = true
-
-  require_code_owner_review = true
-  renovate_automerge        = true
+  name        = "genshin.dungeon.studio"
+  description = "Genshin Impact team builder — manage your character and weapon collection, build team compositions, and plan your roster."
 
   required_status_checks = {
     contexts = [
@@ -28,6 +24,9 @@ module "genshin_dungeon_studio" {
       "Test against Firestore",
     ]
   }
+  require_code_owner_review = true
+  renovate_automerge        = true
+  has_discussions           = true
 
   legacy = {
     squash_only                      = true
