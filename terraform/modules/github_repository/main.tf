@@ -386,11 +386,25 @@ resource "github_actions_repository_permissions" "this" {
   }
 }
 
+data "github_user" "reviewer" {
+  for_each = toset(flatten([for env in values(var.environments) : env.reviewers]))
+
+  username = each.key
+}
+
 resource "github_repository_environment" "this" {
   for_each = var.environments
 
-  repository  = github_repository.this.name
-  environment = each.key
+  repository        = github_repository.this.name
+  environment       = each.key
+  can_admins_bypass = each.value.can_admins_bypass
+
+  dynamic "reviewers" {
+    for_each = length(each.value.reviewers) > 0 ? [1] : []
+    content {
+      users = [for login in each.value.reviewers : tonumber(data.github_user.reviewer[login].id)]
+    }
+  }
 
   dynamic "deployment_branch_policy" {
     for_each = length(each.value.deployment_branches) > 0 ? [1] : []

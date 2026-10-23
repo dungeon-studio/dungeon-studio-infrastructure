@@ -96,6 +96,8 @@ variable "has_discussions" {
 variable "environments" {
   type = map(object({
     deployment_branches = optional(list(string), [])
+    reviewers           = optional(list(string), [])
+    can_admins_bypass   = optional(bool, true)
   }))
   default     = {}
   description = <<-EOT
@@ -104,6 +106,12 @@ variable "environments" {
 
     deployment_branches lists the only refs whose jobs can use the
     environment and read its secrets. Empty admits any ref.
+
+    reviewers lists GitHub logins, any one of whom must approve a job
+    before it can use the environment. Empty requires no approval.
+
+    can_admins_bypass lets repository admins skip the environment's
+    protections, reviewers included.
   EOT
 }
 
