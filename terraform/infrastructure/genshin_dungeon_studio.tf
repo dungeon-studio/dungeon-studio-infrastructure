@@ -23,7 +23,6 @@ module "genshin_dungeon_studio" {
       "Smoke-test dev stack",
       "Test against Firestore",
     ]
-    merge_queue = true
   }
   require_code_owner_review = true
   renovate_automerge        = true
