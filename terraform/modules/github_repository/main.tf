@@ -373,8 +373,8 @@ resource "github_workflow_repository_permissions" "this" {
 }
 
 # Declared because destroying it resets the repository to allow every action,
-# whatever the org allowlist says. Always "selected": GitHub rejects "all"
-# under an org that selects, so the repository repeats the org's allowlist.
+# whatever the org allowlist says. GitHub rejects "all" under an org that
+# selects actions, so each repository repeats the org's allowlist.
 resource "github_actions_repository_permissions" "this" {
   repository      = github_repository.this.name
   allowed_actions = "selected"
