@@ -36,15 +36,14 @@ variable "required_status_checks" {
     release/**. Omit to leave develop ungated.
 
     contexts are GitHub Actions check-run names, each unique on a pull
-    request. A required check that stops reporting blocks every merge,
-    the admin's included. Each must report on every pull request and fail
-    only on what the pull request changes: a path-gated job leaves most
-    pull requests pending forever, and a dependency scan fails on newly
-    disclosed advisories, blocking merges that changed nothing.
+    request. Each must report on every pull request, so no path-gated
+    jobs: a missing check blocks every merge, the admin's included. Each
+    must fail only on what the pull request changes, so no dependency
+    scans, which fail on newly disclosed advisories.
 
     strict requires a pull request into develop to be up to date; main
-    and release/** always require it. It defaults on, or off under
-    renovate_automerge.
+    and release/** always require it. It defaults to false under
+    renovate_automerge, true otherwise.
 
     ci_results_check requires the aggregator job "Check CI results"
     instead of matrix legs, whose names change with the versions they

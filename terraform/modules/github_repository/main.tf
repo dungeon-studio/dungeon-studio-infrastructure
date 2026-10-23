@@ -237,8 +237,8 @@ locals {
 
   # Requiring up-to-date branches makes Renovate rebase whenever the target
   # moves. Each rebase can pull a newer release and restart its
-  # minimumReleaseAge wait, so the pull request may never merge. Release refs
-  # can always require it: Renovate never targets them.
+  # minimumReleaseAge wait, so the pull request may never merge. Renovate
+  # never targets release refs, so they always require up-to-date branches.
   checks_refs = {
     for name, policy in {
       develop = {
