@@ -118,8 +118,6 @@ variable "environments" {
 variable "legacy" {
   type = object({
     squash_only                      = optional(bool, false)
-    hand_made_rulesets               = optional(bool, false)
-    allow_auto_merge                 = optional(bool, false)
     allowed_action_patterns          = optional(list(string))
     can_approve_pull_request_reviews = optional(bool, false)
     dependabot_security_updates      = optional(bool, false)
@@ -132,11 +130,6 @@ variable "legacy" {
 
     squash_only: squash merges and no main branch, in place of Git flow's
     merge commits and protected main and release/**.
-
-    hand_made_rulesets: the repository's own rulesets, in place of this
-    module's.
-
-    allow_auto_merge: GitHub auto-merge without renovate_automerge.
 
     allowed_action_patterns: owner/repo@* patterns for a repository
     allowlist inside the org's. GitHub-owned and verified-creator actions
