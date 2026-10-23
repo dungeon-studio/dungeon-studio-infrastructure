@@ -240,11 +240,13 @@ locals {
         refs     = local.develop_refs
         contexts = local.required_checks
         strict   = coalesce(try(var.required_status_checks.strict, null), !var.renovate_automerge)
+        queue    = try(var.required_status_checks.merge_queue, false)
       }
       release = {
         refs     = local.flow.release_refs
         contexts = concat([local.git_flow_source_check], local.required_checks)
         strict   = true
+        queue    = false
       }
     } : name => policy if length(policy.refs) > 0 && length(policy.contexts) > 0
   }
@@ -281,6 +283,13 @@ resource "github_repository_ruleset" "checks" {
           # the same name.
           integration_id = data.github_app.actions.id
         }
+      }
+    }
+
+    dynamic "merge_queue" {
+      for_each = each.value.queue ? [1] : []
+      content {
+        merge_method = upper(local.flow.merge_methods[0])
       }
     }
   }

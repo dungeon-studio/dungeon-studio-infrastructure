@@ -29,6 +29,7 @@ variable "required_status_checks" {
     ci_results_check = optional(bool, false)
     contexts         = optional(list(string), [])
     strict           = optional(bool)
+    merge_queue      = optional(bool, false)
   })
   default     = null
   description = <<-EOT
@@ -44,6 +45,12 @@ variable "required_status_checks" {
     strict requires a pull request into develop to be up to date; main
     and release/** always require it. It defaults to false under
     renovate_automerge, true otherwise.
+
+    merge_queue routes merges into develop through a merge queue, which
+    runs the checks against the pull request merged onto develop's
+    current head. It catches breakage between pull requests that each
+    passed alone, without strict's rebases. Every context must also run
+    on merge_group.
 
     ci_results_check requires the aggregator job "Check CI results"
     instead of matrix legs, whose names change with the versions they
