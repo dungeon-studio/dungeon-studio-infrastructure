@@ -46,11 +46,9 @@ variable "required_status_checks" {
     and release/** always require it. It defaults to false under
     renovate_automerge, true otherwise.
 
-    merge_queue routes merges into develop through a merge queue, which
-    runs the checks against the pull request merged onto develop's
-    current head. It catches breakage between pull requests that each
-    passed alone, without strict's rebases. Every context must also run
-    on merge_group.
+    merge_queue tests each pull request into develop against develop's
+    latest head without strict's rebases. Every context must also run on
+    merge_group.
 
     ci_results_check requires the aggregator job "Check CI results"
     instead of matrix legs, whose names change with the versions they
