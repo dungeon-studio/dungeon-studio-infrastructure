@@ -1,6 +1,8 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
+# Each run needs fresh Grafana Cloud and Cloudflare tokens — see README
+# §Run the first-time bootstrap.
 [doc("First-time setup: state backend, bootstrap layer, CI credentials.")]
 bootstrap:
     scripts/bootstrap.sh
