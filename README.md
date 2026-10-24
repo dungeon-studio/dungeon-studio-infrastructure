@@ -40,9 +40,10 @@ Three recipes make up the operator surface:
 
 - `just bootstrap` — creates the `dungeon-studio-infrastructure` project, the
   `dungeon-studio-tfstate` state bucket, the Workload Identity Federation pool,
-  and the deployer service accounts, then prompts for the GitHub App
-  credentials the infrastructure layer authenticates with. Run it once per
-  machine, or to rotate the deployer credentials.
+  the deployer service accounts, the Cloudflare zone, and the zone's deployer
+  tokens, then prompts for the GitHub App credentials the infrastructure layer
+  authenticates with. Run it once per machine, or to rotate the deployer
+  credentials.
 - `just infrastructure` — local `terraform apply` against the infrastructure
   layer. Merging to `develop` applies this layer in continuous integration, so
   run the recipe only for the first apply after bootstrap or while that
@@ -56,9 +57,11 @@ Three recipes make up the operator surface:
 
 Terraform splits into two layers on credentials and blast radius rather than
 on provider. `terraform/bootstrap/` runs rarely, with elevated human
-credentials, and provisions the state backend; `terraform/infrastructure/`
-holds the steady-state org configuration, consumes what bootstrap produced,
-and is applied by continuous integration on each merge to `develop`.
+credentials, and provisions the state backend. It also holds the
+`dungeon.studio` Cloudflare zone, because recreating the zone forces a
+registrar change. `terraform/infrastructure/` holds the steady-state org
+configuration, consumes what bootstrap produced, and is applied by continuous
+integration on each merge to `develop`.
 
 Each layer stores state in its own bucket: `dungeon-studio-tfstate` for
 bootstrap, `dungeon-studio-infrastructure-tfstate` for the infrastructure
@@ -74,9 +77,16 @@ workflow tokens. The call names only what differs.
 
 ## Run the first-time bootstrap
 
-Beyond the tooling above you need [Terraform](https://terraform.io), the
-[gcloud CLI](https://cloud.google.com/sdk/docs/install), and an account that
-can create GCP projects and link billing.
+Beyond just and pre-commit you need:
+
+- [Terraform](https://terraform.io) and the
+  [gcloud CLI](https://cloud.google.com/sdk/docs/install)
+- a Google account that can create GCP projects and link billing
+- Super Administrator on the `dungeon-studio` Cloudflare account
+
+The `dungeon-studio` account holds this zone and nothing else. If the account
+is gone, create it under **Accounts**, then **Create Account**, and set its ID
+as `cloudflare_account_id` in `terraform/bootstrap/locals.tf`.
 
 Log in twice. The bootstrap script calls `gcloud`, which uses its own
 credentials, and Terraform reads application default credentials, which
@@ -89,14 +99,28 @@ gcloud auth application-default login
 just bootstrap
 ```
 
-The recipe prompts for the billing account to attach and for a short-lived
-Grafana Cloud token.
-[Create the Grafana Cloud bootstrap token](docs/how-to/create-grafana-cloud-bootstrap-token.md)
-covers the one-time setup. Set `TF_VAR_billing_account_id` and
-`TF_VAR_grafana_cloud_access_policy_token` beforehand to run without a
-terminal.
+The recipe prompts for the billing account to attach and for short-lived
+[Grafana Cloud](docs/how-to/create-grafana-cloud-bootstrap-token.md) and
+[Cloudflare](docs/how-to/create-cloudflare-bootstrap-token.md) bootstrap
+tokens. Set `TF_VAR_billing_account_id`,
+`TF_VAR_grafana_cloud_access_policy_token`, and
+`TF_VAR_cloudflare_bootstrap_token` beforehand to run without a terminal.
 
 Every step is idempotent, so a partial failure is safe to re-run.
+
+The zone starts out pending. Cloudflare deletes it after 28 days unless the
+registrar lists the zone's nameservers:
+
+```sh
+terraform -chdir=terraform/bootstrap output cloudflare_name_servers
+```
+
+If Cloudflare deleted the zone, drop it from state and bootstrap a new one:
+
+```sh
+terraform -chdir=terraform/bootstrap state rm cloudflare_zone.dungeon_studio
+just bootstrap
+```
 
 Once the GitHub App below is registered, `just infrastructure` sets the
 federation provider and deployer service account emails as the Actions
