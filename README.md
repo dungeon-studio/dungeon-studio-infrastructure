@@ -15,8 +15,9 @@ Organization infrastructure as code for Dungeon Studio, managed with Terraform.
 ## Scope
 
 Org-level state that no single product owns: the GCP project and billing
-baseline, the apex `dungeon.studio` DNS zone, and the GitHub org with its
-repositories, labels, and rulesets.
+baseline, the apex `dungeon.studio` DNS zone, the GitHub org with its
+repositories, labels, and rulesets, and the credentials for the Grafana Cloud
+stack every product sends telemetry to.
 
 Product infrastructure stays with its product. `genshin.dungeon.studio` owns
 its own DNS zone in the
@@ -88,9 +89,12 @@ gcloud auth application-default login
 just bootstrap
 ```
 
-The recipe lists your billing accounts and prompts for the one to attach. Set
-`TF_VAR_billing_account_id` beforehand to skip the prompt; the run then needs
-no terminal.
+The recipe prompts for the billing account to attach and for a short-lived
+Grafana Cloud token.
+[Create the Grafana Cloud bootstrap token](docs/how-to/create-grafana-cloud-bootstrap-token.md)
+covers the one-time setup. Set `TF_VAR_billing_account_id` and
+`TF_VAR_grafana_cloud_access_policy_token` beforehand to run without a
+terminal.
 
 Every step is idempotent, so a partial failure is safe to re-run.
 
