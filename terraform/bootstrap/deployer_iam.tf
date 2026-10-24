@@ -17,8 +17,15 @@ locals {
     }
   }
 
-  deployer_github_app_grants = {
-    for pair in setproduct(keys(local.deployers), local.github_app_secrets) :
+  # The provider credentials terraform/infrastructure/ reads. Indexing the
+  # resources rather than naming the secrets orders each grant after its
+  # secret.
+  deployer_secrets = merge(google_secret_manager_secret.github_app, {
+    grafana-provisioner-token = google_secret_manager_secret.grafana_provisioner_token
+  })
+
+  deployer_secret_grants = {
+    for pair in setproduct(keys(local.deployers), keys(local.deployer_secrets)) :
     "${pair[0]}-${pair[1]}" => {
       email  = local.deployers[pair[0]].email
       secret = pair[1]
@@ -26,18 +33,20 @@ locals {
   }
 }
 
-# Plan authenticates the github provider too, so read access is not the
-# applier's alone.
-resource "google_secret_manager_secret_iam_member" "deployer_github_app_secrets" {
-  for_each = local.deployer_github_app_grants
+# Plan authenticates the providers too, so read access is not the applier's
+# alone.
+resource "google_secret_manager_secret_iam_member" "deployer_secrets" {
+  for_each = local.deployer_secret_grants
 
-  project = google_project.infrastructure.project_id
-
-  # each.value.secret holds the same string; indexing the resource is what
-  # orders this grant after the secret it grants on.
-  secret_id = google_secret_manager_secret.github_app[each.value.secret].secret_id
+  project   = google_project.infrastructure.project_id
+  secret_id = local.deployer_secrets[each.value.secret].secret_id
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${each.value.email}"
+}
+
+moved {
+  from = google_secret_manager_secret_iam_member.deployer_github_app_secrets
+  to   = google_secret_manager_secret_iam_member.deployer_secrets
 }
 
 resource "google_storage_bucket_iam_member" "deployer_state_objects" {
