@@ -28,8 +28,12 @@ variable "cloudflare_bootstrap_token" {
   sensitive   = true
   description = <<-EOT
     Bootstrap Cloudflare token, created by hand and revoked after apply.
+    Export it as TF_VAR_cloudflare_bootstrap_token: a token pasted at this
+    prompt can arrive corrupted.
 
-    At https://dash.cloudflare.com/profile/api-tokens choose
+    Create it under My Profile, not the account's Account API tokens page,
+    whose tokens cannot mint other tokens. At
+    https://dash.cloudflare.com/profile/api-tokens choose
     Create Custom Token and name it dungeon-studio-bootstrap. Each row's
     group dropdown defaults to Account, so set it per row:
 

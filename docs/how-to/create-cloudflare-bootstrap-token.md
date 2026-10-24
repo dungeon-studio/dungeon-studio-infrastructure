@@ -10,9 +10,11 @@ creation, so each `just bootstrap` run needs a new one.
 
 You need Super Administrator on the `dungeon-studio` Cloudflare account.
 
-1. At <https://dash.cloudflare.com/profile/api-tokens> choose
-   **Create Token**, then **Create Custom Token**. Name it
-   `dungeon-studio-bootstrap`. Under **Permissions** add these rows. Each
+1. At <https://dash.cloudflare.com/profile/api-tokens>, under **My Profile**,
+   choose **Create Token**, then **Create Custom Token**, and name it
+   `dungeon-studio-bootstrap`. A token from the account's **Account API
+   tokens** page cannot mint other tokens. Under **Permissions** add these
+   rows. Each
    row's group dropdown defaults to `Account`, so set it per row:
 
    | Group   | Permission           | Access |
