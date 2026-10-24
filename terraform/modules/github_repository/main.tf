@@ -260,7 +260,9 @@ resource "github_repository_ruleset" "checks" {
   target      = "branch"
   enforcement = "active"
 
-  depends_on = [github_branch_default.this]
+  # Creating main from develop fails once the release checks exist:
+  # develop's commits never carry the Git flow source check.
+  depends_on = [github_branch_default.this, github_branch.long_lived]
 
   conditions {
     ref_name {
