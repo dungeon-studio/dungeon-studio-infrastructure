@@ -3,8 +3,9 @@
 # SPDX-License-Identifier: MIT
 #
 # Local apply for the infrastructure layer when CI cannot apply it. The github
-# provider authenticates as a GitHub App whose credentials terraform/bootstrap/
-# keeps in Secret Manager.
+# provider authenticates as a GitHub App and the cloudflare provider as the
+# read-write deployer, with credentials terraform/bootstrap/ keeps in Secret
+# Manager.
 # Reading them into the environment keeps the private key off disk and out of
 # Terraform state.
 
@@ -27,15 +28,17 @@ check_preconditions() {
 # that subshell; set -e is what stops the script before terraform runs.
 read_secret() {
   gcloud secrets versions access latest --secret "$1" --project "${PROJECT_ID}" ||
-    die "cannot read secret $1 — see docs/how-to/create-github-app.md"
+    die "cannot read secret $1 — see README §Run the first-time bootstrap"
 }
 
-export_github_app_credentials() {
+export_provider_credentials() {
   GITHUB_APP_ID="$(read_secret github-app-id)"
   GITHUB_APP_INSTALLATION_ID="$(read_secret github-app-installation-id)"
   GITHUB_APP_PEM_FILE="$(read_secret github-app-private-key)"
+  CLOUDFLARE_API_TOKEN="$(read_secret cloudflare-api-token-deployer-rw)"
 
-  export GITHUB_APP_ID GITHUB_APP_INSTALLATION_ID GITHUB_APP_PEM_FILE
+  export GITHUB_APP_ID GITHUB_APP_INSTALLATION_ID GITHUB_APP_PEM_FILE \
+    CLOUDFLARE_API_TOKEN
 }
 
 apply_infrastructure_layer() {
@@ -47,7 +50,7 @@ main() {
   cd "$(git rev-parse --show-toplevel)" || die "not inside a git work tree"
 
   check_preconditions
-  export_github_app_credentials
+  export_provider_credentials
   apply_infrastructure_layer
 }
 
