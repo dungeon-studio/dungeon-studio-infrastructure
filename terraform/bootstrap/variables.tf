@@ -22,3 +22,27 @@ variable "grafana_cloud_access_policy_token" {
     3. Set a one-day expiry and copy the token.
   EOT
 }
+
+variable "cloudflare_bootstrap_token" {
+  type        = string
+  sensitive   = true
+  description = <<-EOT
+    Bootstrap Cloudflare token, created by hand and revoked after apply.
+    Export it as TF_VAR_cloudflare_bootstrap_token: a token pasted at this
+    prompt can arrive corrupted.
+
+    Create it under My Profile, not the account's Account API tokens page,
+    whose tokens cannot mint other tokens. At
+    https://dash.cloudflare.com/profile/api-tokens choose
+    Create Custom Token and name it dungeon-studio-bootstrap. Each row's
+    group dropdown defaults to Account, so set it per row:
+
+      Account | Account API Tokens | Edit
+      Zone    | Zone               | Edit
+
+    Set Account Resources to: Include | dungeon-studio, and
+    Zone Resources to: Include | All zones from an account | dungeon-studio.
+
+    Full steps: docs/how-to/create-cloudflare-bootstrap-token.md
+  EOT
+}

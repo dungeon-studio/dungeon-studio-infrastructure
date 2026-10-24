@@ -4,6 +4,10 @@
 terraform {
   required_version = ">= 1.7"
   required_providers {
+    cloudflare = {
+      source  = "cloudflare/cloudflare"
+      version = "~> 5.28"
+    }
     github = {
       source  = "integrations/github"
       version = "~> 6.13"
@@ -26,3 +30,7 @@ provider "github" {
   # token, or to `gh auth token`, and applies as whoever ran it.
   app_auth {}
 }
+
+# api_token falls back to CLOUDFLARE_API_TOKEN, which the scripts read out of
+# Secret Manager.
+provider "cloudflare" {}

@@ -4,6 +4,10 @@
 terraform {
   required_version = ">= 1.7"
   required_providers {
+    cloudflare = {
+      source  = "cloudflare/cloudflare"
+      version = "~> 5.28"
+    }
     google = {
       source  = "hashicorp/google"
       version = "~> 8.0"
@@ -13,6 +17,10 @@ terraform {
       version = "~> 4.50"
     }
   }
+}
+
+provider "cloudflare" {
+  api_token = var.cloudflare_bootstrap_token
 }
 
 provider "google" {

@@ -13,6 +13,7 @@ locals {
     grafana_stack_id           = data.grafana_cloud_stack.this.id
     grafana_otlp_url           = data.grafana_cloud_stack.this.otlp_url
     grafana_gcp_reader_email   = google_service_account.grafana_gcp_reader.email
+    cloudflare_zone_id         = cloudflare_zone.dungeon_studio.id
   }
 }
 

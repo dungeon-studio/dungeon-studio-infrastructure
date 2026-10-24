@@ -2,9 +2,10 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 #
-# Gives a workflow job the GitHub App credentials that the infrastructure
-# layer's github provider needs. Run it after the job authenticates as a
-# deployer. scripts/infrastructure.sh does the same for a local apply.
+# Gives a workflow job the GitHub App and Cloudflare credentials that the
+# infrastructure layer's providers need. Run it after the job authenticates as
+# a deployer, passing its role: each deployer can read only its own Cloudflare
+# token. scripts/infrastructure.sh does the same for a local apply.
 
 set -euo pipefail
 
@@ -14,6 +15,7 @@ die() {
 }
 
 check_preconditions() {
+  [[ "${1:-}" == ro || "${1:-}" == rw ]] || die "usage: $0 ro|rw"
   command -v gcloud >/dev/null || die "gcloud not found in PATH"
   [[ -n "${GITHUB_ENV:-}" ]] || die "GITHUB_ENV is unset; run inside a GitHub Actions step"
 }
@@ -47,16 +49,18 @@ write_secret() {
 }
 
 main() {
-  check_preconditions
+  check_preconditions "$@"
 
-  local app_id installation_id pem
+  local role="$1" app_id installation_id pem cloudflare_token
   app_id="$(read_secret github-app-id)"
   installation_id="$(read_secret github-app-installation-id)"
   pem="$(read_secret github-app-private-key)"
+  cloudflare_token="$(read_secret "cloudflare-api-token-deployer-${role}")"
 
   write_env GITHUB_APP_ID "${app_id}"
   write_env GITHUB_APP_INSTALLATION_ID "${installation_id}"
   write_secret GITHUB_APP_PEM_FILE "${pem}"
+  write_secret CLOUDFLARE_API_TOKEN "${cloudflare_token}"
 }
 
 main "$@"

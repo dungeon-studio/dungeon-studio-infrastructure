@@ -36,3 +36,9 @@ output "github_deployer_rw_email" {
   description = "Email of the read-write deployer service account (terraform apply)"
   sensitive   = false
 }
+
+output "cloudflare_name_servers" {
+  value       = cloudflare_zone.dungeon_studio.name_servers
+  description = "Nameservers Cloudflare assigned dungeon.studio, to set at the registrar on cutover"
+  sensitive   = false
+}
