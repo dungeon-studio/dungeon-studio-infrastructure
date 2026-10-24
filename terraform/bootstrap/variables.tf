@@ -10,3 +10,15 @@ variable "billing_account_id" {
     error_message = "Billing account ID must be 18 characters: XXXXXX-XXXXXX-XXXXXX (6 alphanumeric, hyphen, 6 alphanumeric, hyphen, 6 alphanumeric)"
   }
 }
+
+variable "grafana_cloud_access_policy_token" {
+  type        = string
+  sensitive   = true
+  description = <<-EOT
+    Grafana Cloud access policy token for this run. Delete it afterwards.
+
+    1. Open https://dungeonstudio.grafana.net/a/grafana-auth-app
+    2. On dungeon-studio-infrastructure-bootstrap, choose Add token.
+    3. Set a one-day expiry and copy the token.
+  EOT
+}
