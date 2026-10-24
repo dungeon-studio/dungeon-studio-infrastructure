@@ -28,4 +28,7 @@ locals {
     "github-app-installation-id",
     "github-app-private-key",
   ])
+
+  # The dungeon-studio account. An identifier, not a credential.
+  cloudflare_account_id = "fa349d8b69f7a0deecc7a880f8dfb60a" # pragma: allowlist secret
 }
