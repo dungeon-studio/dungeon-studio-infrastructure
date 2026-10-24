@@ -2,10 +2,10 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 #
-# Gives a workflow job the GitHub App and Cloudflare credentials that the
-# infrastructure layer's providers need. Run it after the job authenticates as
-# a deployer, passing its role: each deployer can read only its own Cloudflare
-# token. scripts/infrastructure.sh does the same for a local apply.
+# Gives a workflow job the GitHub App, Cloudflare, and Grafana credentials that
+# the infrastructure layer's providers need. Run it after the job authenticates
+# as a deployer, passing its role: each deployer can read only its own
+# Cloudflare token. scripts/infrastructure.sh does the same for a local apply.
 
 set -euo pipefail
 
@@ -51,16 +51,18 @@ write_secret() {
 main() {
   check_preconditions "$@"
 
-  local role="$1" app_id installation_id pem cloudflare_token
+  local role="$1" app_id installation_id pem cloudflare_token grafana_token
   app_id="$(read_secret github-app-id)"
   installation_id="$(read_secret github-app-installation-id)"
   pem="$(read_secret github-app-private-key)"
   cloudflare_token="$(read_secret "cloudflare-api-token-deployer-${role}")"
+  grafana_token="$(read_secret grafana-provisioner-token)"
 
   write_env GITHUB_APP_ID "${app_id}"
   write_env GITHUB_APP_INSTALLATION_ID "${installation_id}"
   write_secret GITHUB_APP_PEM_FILE "${pem}"
   write_secret CLOUDFLARE_API_TOKEN "${cloudflare_token}"
+  write_secret GRAFANA_AUTH "${grafana_token}"
 }
 
 main "$@"
