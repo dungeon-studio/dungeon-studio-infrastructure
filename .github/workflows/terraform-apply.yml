@@ -11,6 +11,7 @@ on:
       - develop
     paths:
       - terraform/infrastructure/**
+      - terraform/modules/**
       - scripts/export-terraform-credentials.sh
       - .github/workflows/terraform-apply.yml
 
