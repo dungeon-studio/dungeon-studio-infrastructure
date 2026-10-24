@@ -36,7 +36,7 @@ jobs:
       # renovate: datasource=github-releases depName=hashicorp/terraform extractVersion=^v(?<version>.+)$
       TERRAFORM_VERSION: '1.16.6'
       # renovate: datasource=github-releases depName=aquasecurity/trivy extractVersion=^v(?<version>.+)$
-      TRIVY_VERSION: '0.76.0'
+      TRIVY_VERSION: '0.76.1'
 
     steps:
       - name: Checkout repository
