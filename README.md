@@ -36,7 +36,7 @@ pre-commit install
 Every check this repository enforces runs through pre-commit, so that one
 command is the whole local setup.
 
-Three recipes make up the operator surface:
+These recipes make up the operator surface:
 
 - `just bootstrap` — creates the `dungeon-studio-infrastructure` project, the
   `dungeon-studio-tfstate` state bucket, the Workload Identity Federation pool,
@@ -52,6 +52,9 @@ Three recipes make up the operator surface:
 - `just configure-hook-fix` — writes the hook-fix App's credentials to the
   repositories Renovate automerges. Run it after registering the App or
   rotating its key.
+- `just configure-grafana-gcp` — sets the service account key on the Grafana
+  data sources that query GCP. Run it after Terraform creates or recreates one,
+  or after rotating the key.
 
 ## Layout
 
@@ -145,6 +148,24 @@ Renovate branches. Its credentials are Actions secrets, not Terraform
 resources, so the key stays out of state.
 [Create the hook-fix GitHub App](docs/how-to/create-hook-fix-github-app.md)
 registers it, sets the secrets, and rotates the key.
+
+## Connect a product to Grafana Cloud
+
+Bootstrap creates the credentials products use to reach the `dungeonstudio`
+stack:
+
+- Reading metrics. Grafana queries Cloud Monitoring as `grafana-gcp-reader`,
+  which holds no roles here. A product grants it `roles/monitoring.viewer` on
+  each of its projects. [Connect Grafana to Cloud
+  Monitoring](docs/how-to/connect-grafana-to-gcp.md) sets the data source's
+  key and checks a query.
+- Sending telemetry. Each product environment has its own write-only token
+  for metrics, logs, and traces, in this project's
+  `grafana-push-token-<project>` secret. Products read the secret in place
+  rather than copying it, so rotating a token touches one place. Add a product
+  environment to `grafana_push_environments` in
+  `terraform/bootstrap/grafana_push_tokens.tf`, and grant its runtime identity
+  `roles/secretmanager.secretAccessor` on the secret there too.
 
 ## Contributing
 
