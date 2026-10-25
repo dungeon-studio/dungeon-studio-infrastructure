@@ -3,9 +3,9 @@
 # SPDX-License-Identifier: MIT
 #
 # Local apply for the infrastructure layer when CI cannot apply it. The github
-# provider authenticates as a GitHub App and the cloudflare provider as the
-# read-write deployer, with credentials terraform/bootstrap/ keeps in Secret
-# Manager.
+# provider authenticates as a GitHub App, the cloudflare provider as the
+# read-write deployer, and the grafana provider as the stack provisioner, with
+# credentials terraform/bootstrap/ keeps in Secret Manager.
 # Reading them into the environment keeps the private key off disk and out of
 # Terraform state.
 
@@ -36,9 +36,10 @@ export_provider_credentials() {
   GITHUB_APP_INSTALLATION_ID="$(read_secret github-app-installation-id)"
   GITHUB_APP_PEM_FILE="$(read_secret github-app-private-key)"
   CLOUDFLARE_API_TOKEN="$(read_secret cloudflare-api-token-deployer-rw)"
+  GRAFANA_AUTH="$(read_secret grafana-provisioner-token)"
 
   export GITHUB_APP_ID GITHUB_APP_INSTALLATION_ID GITHUB_APP_PEM_FILE \
-    CLOUDFLARE_API_TOKEN
+    CLOUDFLARE_API_TOKEN GRAFANA_AUTH
 }
 
 apply_infrastructure_layer() {

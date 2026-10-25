@@ -16,6 +16,10 @@ terraform {
       source  = "hashicorp/google"
       version = "~> 8.0"
     }
+    grafana = {
+      source  = "grafana/grafana"
+      version = "~> 4.50"
+    }
   }
 }
 
@@ -34,3 +38,9 @@ provider "github" {
 # api_token falls back to CLOUDFLARE_API_TOKEN, which the scripts read out of
 # Secret Manager.
 provider "cloudflare" {}
+
+# auth falls back to GRAFANA_AUTH, which the scripts read out of Secret
+# Manager.
+provider "grafana" {
+  url = local.bootstrap.grafana_stack_url
+}
