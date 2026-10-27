@@ -1,0 +1,99 @@
+# SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
+# SPDX-License-Identifier: MIT
+---
+name: Daily
+
+on:
+  schedule:
+    - cron: '0 7 * * *'
+      timezone: Europe/London
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dispatch-unapplied:
+    name: Dispatch apply for unapplied merges
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    permissions:
+      contents: read
+      actions: write
+
+    outputs:
+      dispatched: ${{ steps.dispatch.outputs.dispatched }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Dispatch the apply workflow if develop has unapplied changes
+        id: dispatch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: scripts/dispatch-unapplied-apply.sh
+
+  # GitHub emails a failed scheduled run to whoever last edited its cron line.
+  # Bootstrap is left out: CI cannot read its state (README §Layout).
+  terraform-drift:
+    name: Check infrastructure layer for drift
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    # The dispatched apply closes the diff this plan would report, and the
+    # plan could reach the state queue first.
+    needs: dispatch-unapplied
+    if: needs.dispatch-unapplied.outputs.dispatched == 'false'
+
+    # The read-only deployer cannot write a lock; this group keeps the plan
+    # from reading state mid-write.
+    concurrency:
+      group: terraform-state
+      queue: max
+
+    permissions:
+      contents: read
+      id-token: write
+
+    env:
+      # renovate: datasource=github-releases depName=hashicorp/terraform extractVersion=^v(?<version>.+)$
+      TERRAFORM_VERSION: '1.17.0'
+
+    defaults:
+      run:
+        working-directory: terraform/infrastructure
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          terraform_wrapper: false
+
+      - name: Authenticate as the read-only deployer
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3.0.0
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOYER_RO_EMAIL }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@aa5489c8933f4cc7a4f7d45035b3b1440c9c10db # v3.0.1
+
+      - name: Export provider credentials
+        run: '"${GITHUB_WORKSPACE}/scripts/export-terraform-credentials.sh" ro'
+
+      - name: Initialize Terraform
+        run: terraform init -input=false
+
+      - name: Plan
+        run: terraform plan -input=false -lock=false -no-color -detailed-exitcode
