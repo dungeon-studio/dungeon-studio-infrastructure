@@ -16,7 +16,7 @@ jobs:
   # GitHub occasionally drops a push event, so a merge to develop can land
   # without the apply workflow ever starting.
   dispatch-unapplied:
-    name: Apply merges a dropped push event skipped
+    name: Dispatch apply for unapplied merges
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
@@ -34,25 +34,11 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      # Compares against the newest apply run whatever its outcome: a failed
-      # apply already emailed, and re-dispatching it would fail again daily.
       - name: Dispatch the apply workflow if develop has unapplied changes
         id: dispatch
         env:
           GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          workflow=terraform-apply.yml
-          last=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/${workflow}/runs?branch=develop&per_page=1" \
-            --jq '.workflow_runs[0].head_sha // empty')
-          mapfile -t paths < <(yq '.on.push.paths[]' ".github/workflows/${workflow}")
-          if [[ -n "${last}" ]] && git diff --quiet "${last}" HEAD -- "${paths[@]}"; then
-            echo "dispatched=false" >>"${GITHUB_OUTPUT}"
-            exit 0
-          fi
-          echo "::warning::No apply has run on develop's changes since ${last:-the first commit}"
-          gh workflow run "${workflow}" --ref develop
-          echo "dispatched=true" >>"${GITHUB_OUTPUT}"
+        run: scripts/dispatch-unapplied-apply.sh
 
   # Exit code 2 from the plan fails this job. GitHub emails a scheduled run's
   # failure to whoever last edited its cron line.
