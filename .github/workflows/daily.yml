@@ -13,8 +13,6 @@ permissions:
   contents: read
 
 jobs:
-  # GitHub occasionally drops a push event, so a merge to develop can land
-  # without the apply workflow ever starting.
   dispatch-unapplied:
     name: Dispatch apply for unapplied merges
     runs-on: ubuntu-latest
@@ -40,8 +38,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: scripts/dispatch-unapplied-apply.sh
 
-  # Exit code 2 from the plan fails this job. GitHub emails a scheduled run's
-  # failure to whoever last edited its cron line.
+  # GitHub emails a failed scheduled run to whoever last edited its cron line.
   # Bootstrap is left out: CI cannot read its state (README §Layout).
   terraform-drift:
     name: Check infrastructure layer for drift
