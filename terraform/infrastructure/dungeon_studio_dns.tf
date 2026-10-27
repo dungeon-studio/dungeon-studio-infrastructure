@@ -36,12 +36,35 @@ resource "cloudflare_dns_record" "apex" {
   proxied = false
 }
 
+resource "cloudflare_dns_record" "apex_https" {
+  zone_id = local.dungeon_studio_zone_id
+  name    = "dungeon.studio"
+  type    = "HTTPS"
+  ttl     = local.squarespace_ttl
+
+  data = {
+    priority = 1
+    target   = "."
+    value    = format("alpn=%q ipv4hint=%q", "h2,http/1.1", join(",", local.squarespace_apex_addresses))
+  }
+}
+
 resource "cloudflare_dns_record" "www" {
   zone_id = local.dungeon_studio_zone_id
   name    = "www.dungeon.studio"
   type    = "CNAME"
   content = "ext-sq.squarespace.com"
   ttl     = local.squarespace_ttl
+  proxied = false
+}
+
+# Deleting this lapses the domain's Google verification.
+resource "cloudflare_dns_record" "google_verification" {
+  zone_id = local.dungeon_studio_zone_id
+  name    = "47raxixnsgll.dungeon.studio"
+  type    = "CNAME"
+  content = "gv-wma5uc2xaguais.dv.googlehosted.com"
+  ttl     = 300
   proxied = false
 }
 
