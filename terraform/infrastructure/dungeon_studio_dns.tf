@@ -6,6 +6,8 @@
 locals {
   dungeon_studio_zone_id = local.bootstrap.cloudflare_zone_id
 
+  squarespace_ttl = 14400
+
   squarespace_apex_addresses = toset([
     "198.49.23.144",
     "198.49.23.145",
@@ -30,7 +32,7 @@ resource "cloudflare_dns_record" "apex" {
   name    = "dungeon.studio"
   type    = "A"
   content = each.key
-  ttl     = 14400
+  ttl     = local.squarespace_ttl
   proxied = false
 }
 
@@ -39,7 +41,7 @@ resource "cloudflare_dns_record" "www" {
   name    = "www.dungeon.studio"
   type    = "CNAME"
   content = "ext-sq.squarespace.com"
-  ttl     = 14400
+  ttl     = local.squarespace_ttl
   proxied = false
 }
 
