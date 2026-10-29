@@ -4,7 +4,7 @@
 # Create the Cloudflare bootstrap token
 
 `terraform/bootstrap/` uses this token to create and sign the `dungeon.studio`
-zone, add the address `privacy@` forwards to, and mint the deployer tokens that
+zone, add the destination `privacy@` forwards to, and mint the deployer tokens that
 continuous integration authenticates with. It
 never enters continuous integration. Cloudflare shows a token's value only at
 creation, so each `just bootstrap` run needs a new one.
