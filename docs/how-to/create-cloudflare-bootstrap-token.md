@@ -3,8 +3,9 @@
 
 # Create the Cloudflare bootstrap token
 
-`terraform/bootstrap/` uses this token to create the `dungeon.studio` zone and
-mint the deployer tokens that continuous integration authenticates with. It
+`terraform/bootstrap/` uses this token to create and sign the `dungeon.studio`
+zone, add the address `privacy@` forwards to, and mint the deployer tokens that
+continuous integration authenticates with. It
 never enters continuous integration. Cloudflare shows a token's value only at
 creation, so each `just bootstrap` run needs a new one.
 
@@ -17,10 +18,12 @@ You need Super Administrator on the `dungeon-studio` Cloudflare account.
    rows. Each
    row's group dropdown defaults to `Account`, so set it per row:
 
-   | Group   | Permission           | Access |
-   | ------- | -------------------- | ------ |
-   | Account | `Account API Tokens` | Edit   |
-   | Zone    | `Zone`               | Edit   |
+   | Group   | Permission                | Access |
+   | ------- | ------------------------- | ------ |
+   | Account | `Account API Tokens`      | Edit   |
+   | Account | `Email Routing Addresses` | Edit   |
+   | Zone    | `Zone`                    | Edit   |
+   | Zone    | `DNS`                     | Edit   |
 
    Set **Account Resources** to `Include`, then `dungeon-studio`. The zone does
    not exist on the first run, so set **Zone Resources** to `Include`, then

@@ -37,8 +37,10 @@ variable "cloudflare_bootstrap_token" {
     Create Custom Token and name it dungeon-studio-bootstrap. Each row's
     group dropdown defaults to Account, so set it per row:
 
-      Account | Account API Tokens | Edit
-      Zone    | Zone               | Edit
+      Account | Account API Tokens      | Edit
+      Account | Email Routing Addresses | Edit
+      Zone    | Zone                    | Edit
+      Zone    | DNS                     | Edit
 
     Set Account Resources to: Include | dungeon-studio, and
     Zone Resources to: Include | All zones from an account | dungeon-studio.
