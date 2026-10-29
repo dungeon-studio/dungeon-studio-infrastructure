@@ -4,8 +4,6 @@
 # Squarespace terminates TLS for its own hostnames, so its records stay
 # unproxied.
 locals {
-  dungeon_studio_zone_id = local.bootstrap.cloudflare_zone_id
-
   squarespace_ttl = 14400
 
   squarespace_apex_addresses = toset([
