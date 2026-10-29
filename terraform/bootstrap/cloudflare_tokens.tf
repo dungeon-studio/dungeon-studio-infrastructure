@@ -5,8 +5,8 @@ locals {
   # Extend only when a resource in terraform/infrastructure/ fails to plan or
   # apply without it.
   cloudflare_deployer_permissions = {
-    ro = ["Zone Read", "DNS Read"]
-    rw = ["Zone Read", "DNS Write"]
+    ro = ["Zone Read", "DNS Read", "Zone Settings Read", "Email Routing Rules Read"]
+    rw = ["Zone Read", "DNS Write", "Zone Settings Write", "Email Routing Rules Write"]
   }
 }
 
