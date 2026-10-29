@@ -13,14 +13,29 @@ locals {
     "198.185.159.145",
   ])
 
-  # The core environment of genshin.dungeon.studio owns this zone. Recreating
-  # it there assigns new nameservers, which this set must follow.
   genshin_name_servers = toset([
-    "ns-cloud-c1.googledomains.com",
-    "ns-cloud-c2.googledomains.com",
-    "ns-cloud-c3.googledomains.com",
-    "ns-cloud-c4.googledomains.com",
+    for name_server in data.google_dns_managed_zone.genshin.name_servers :
+    trimsuffix(name_server, ".")
   ])
+
+  # Keyed by key tag so a key-signing key rollover adds the new DS record
+  # alongside the old one rather than replacing it.
+  genshin_ds_records = {
+    for key in data.google_dns_keys.genshin.key_signing_keys :
+    key.key_tag => split(" ", key.ds_record) if key.is_active
+  }
+}
+
+# The core environment of genshin.dungeon.studio owns this zone. Reading it
+# here keeps the delegation and DS records following a recreated zone or a
+# rotated key on the next apply.
+data "google_dns_managed_zone" "genshin" {
+  project = "dungeon-studio-genshin-core"
+  name    = "genshin-dungeon-studio"
+}
+
+data "google_dns_keys" "genshin" {
+  managed_zone = data.google_dns_managed_zone.genshin.id
 }
 
 resource "cloudflare_dns_record" "apex" {
@@ -74,4 +89,19 @@ resource "cloudflare_dns_record" "genshin_delegation" {
   type    = "NS"
   content = each.key
   ttl     = 21600
+}
+
+resource "cloudflare_dns_record" "genshin_ds" {
+  for_each = local.genshin_ds_records
+
+  zone_id = local.dungeon_studio_zone_id
+  name    = "genshin.dungeon.studio"
+  type    = "DS"
+  ttl     = 21600
+  data = {
+    key_tag     = tonumber(each.value[0])
+    algorithm   = tonumber(each.value[1])
+    digest_type = tonumber(each.value[2])
+    digest      = each.value[3]
+  }
 }
