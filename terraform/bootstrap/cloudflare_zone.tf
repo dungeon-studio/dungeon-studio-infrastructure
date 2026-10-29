@@ -16,3 +16,15 @@ resource "cloudflare_zone" "dungeon_studio" {
     prevent_destroy = true
   }
 }
+
+# With a DS record at .studio, disabling or re-keying this breaks validation of
+# the whole zone until the registrar holds the new DS, so it shares the zone's
+# layer.
+resource "cloudflare_zone_dnssec" "dungeon_studio" {
+  zone_id = cloudflare_zone.dungeon_studio.id
+  status  = "active"
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}

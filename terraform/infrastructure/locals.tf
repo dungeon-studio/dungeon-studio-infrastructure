@@ -3,4 +3,6 @@
 
 locals {
   github_owner = "dungeon-studio"
+
+  dungeon_studio_zone_id = local.bootstrap.cloudflare_zone_id
 }

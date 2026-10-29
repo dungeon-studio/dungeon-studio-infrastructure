@@ -42,3 +42,14 @@ output "cloudflare_name_servers" {
   description = "Nameservers Cloudflare assigned dungeon.studio, to set at the registrar on cutover"
   sensitive   = false
 }
+
+output "cloudflare_ds_record" {
+  value = {
+    key_tag     = cloudflare_zone_dnssec.dungeon_studio.key_tag
+    algorithm   = cloudflare_zone_dnssec.dungeon_studio.algorithm
+    digest_type = cloudflare_zone_dnssec.dungeon_studio.digest_type
+    digest      = cloudflare_zone_dnssec.dungeon_studio.digest
+  }
+  description = "DS record fields for dungeon.studio, to enter at the registrar"
+  sensitive   = false
+}

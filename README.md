@@ -40,10 +40,10 @@ These recipes make up the operator surface:
 
 - `just bootstrap` — creates the `dungeon-studio-infrastructure` project, the
   `dungeon-studio-tfstate` state bucket, the Workload Identity Federation pool,
-  the deployer service accounts, the Cloudflare zone, and the zone's deployer
-  tokens, then prompts for the GitHub App credentials the infrastructure layer
-  authenticates with. Run it once per machine, or to rotate the deployer
-  credentials.
+  the deployer service accounts, the Cloudflare zone and its DNSSEC keys, the
+  `privacy@` destination address, and the zone's deployer tokens, then prompts
+  for the GitHub App credentials the infrastructure layer authenticates with.
+  Run it once per machine, or to rotate the deployer credentials.
 - `just infrastructure` — local `terraform apply` against the infrastructure
   layer. Merging to `develop` applies this layer in continuous integration, so
   run the recipe only for the first apply after bootstrap or while that
@@ -124,6 +124,17 @@ If Cloudflare deleted the zone, drop it from state and bootstrap a new one:
 terraform -chdir=terraform/bootstrap state rm cloudflare_zone.dungeon_studio
 just bootstrap
 ```
+
+Once the zone is active, add its DS record at the registrar, or resolvers
+treat the zone as unsigned:
+
+```sh
+terraform -chdir=terraform/bootstrap output cloudflare_ds_record
+```
+
+Follow the verification link Cloudflare emails to the destination
+`privacy@dungeon.studio` forwards to. The forwarding rule stays disabled until
+then.
 
 Once the GitHub App below is registered, `just infrastructure` sets the
 federation provider and deployer service account emails as the Actions
