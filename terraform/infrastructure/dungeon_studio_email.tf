@@ -21,7 +21,7 @@ resource "cloudflare_email_routing_rule" "privacy" {
 
   actions = [{
     type  = "forward"
-    value = [local.bootstrap.privacy_email_destination]
+    value = [local.bootstrap.cloudflare_privacy_destination]
   }]
 
   depends_on = [cloudflare_email_routing_dns.dungeon_studio]

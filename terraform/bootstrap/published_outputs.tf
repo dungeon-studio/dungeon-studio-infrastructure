@@ -6,15 +6,15 @@
 # any pull request can read this object, so publish only non-secret values.
 locals {
   published_outputs = {
-    workload_identity_provider = google_iam_workload_identity_pool_provider.github.name
-    github_deployer_ro_email   = google_service_account.github_deployer_ro.email
-    github_deployer_rw_email   = google_service_account.github_deployer_rw.email
-    grafana_stack_url          = data.grafana_cloud_stack.this.url
-    grafana_stack_id           = data.grafana_cloud_stack.this.id
-    grafana_otlp_url           = data.grafana_cloud_stack.this.otlp_url
-    grafana_gcp_reader_email   = google_service_account.grafana_gcp_reader.email
-    cloudflare_zone_id         = cloudflare_zone.dungeon_studio.id
-    privacy_email_destination  = cloudflare_email_routing_address.privacy.email
+    workload_identity_provider     = google_iam_workload_identity_pool_provider.github.name
+    github_deployer_ro_email       = google_service_account.github_deployer_ro.email
+    github_deployer_rw_email       = google_service_account.github_deployer_rw.email
+    grafana_stack_url              = data.grafana_cloud_stack.this.url
+    grafana_stack_id               = data.grafana_cloud_stack.this.id
+    grafana_otlp_url               = data.grafana_cloud_stack.this.otlp_url
+    grafana_gcp_reader_email       = google_service_account.grafana_gcp_reader.email
+    cloudflare_zone_id             = cloudflare_zone.dungeon_studio.id
+    cloudflare_privacy_destination = cloudflare_email_routing_address.privacy.email
   }
 }
 
