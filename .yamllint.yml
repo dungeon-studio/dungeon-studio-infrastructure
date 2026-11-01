@@ -5,8 +5,8 @@
 extends: default
 
 rules:
-  # SHA pins (`uses: org/repo@<sha> # vN`) and single-line `# renovate:`
-  # version comments cannot be wrapped. 120 matches the product monorepo.
+  # SHA pins (`uses: org/repo@<sha> # vN`) cannot be wrapped. 120 matches the
+  # product monorepo.
   line-length:
     max: 120
   # Renovate writes a single space before its trailing version comment
