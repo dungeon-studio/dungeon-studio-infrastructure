@@ -21,7 +21,7 @@ permissions:
 jobs:
   terraform-apply:
     name: Apply Terraform infrastructure layer
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 20
 
     # Shared with the pull request plan so a plan never reads state
