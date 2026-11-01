@@ -1,0 +1,9 @@
+# SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
+# SPDX-License-Identifier: MIT
+
+[settings]
+locked = true
+lockfile_platforms = ["linux-x64"]
+
+[tools]
+terraform = "1.17.0"
