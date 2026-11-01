@@ -6,4 +6,6 @@ locked = true
 lockfile_platforms = ["linux-x64"]
 
 [tools]
+just = "1.59.0"
 terraform = "1.17.0"
+trivy = "0.76.1"

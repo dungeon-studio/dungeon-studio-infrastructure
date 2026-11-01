@@ -2,6 +2,16 @@
 
 lockfile_version = 3
 
+[[tools.just]]
+version = "1.59.0"
+backend = "aqua:casey/just"
+specifiers = ["1.59.0"]
+
+[tools.just."platforms.linux-x64"]
+checksum = "sha256:409044617b6f06517c1035e55ca38c8c856ff8b650e41bc2aa1ef82d5903a23e"
+url = "https://github.com/casey/just/releases/download/1.59.0/just-1.59.0-x86_64-unknown-linux-musl.tar.gz"
+url_api = "https://api.github.com/repos/casey/just/releases/assets/642949555"
+
 [[tools.terraform]]
 version = "1.17.0"
 backend = "aqua:hashicorp/terraform"
@@ -10,3 +20,14 @@ specifiers = ["1.17.0"]
 [tools.terraform."platforms.linux-x64"]
 checksum = "sha256:c168cab7c637a8769fdb90089ddd19de701bc6ff8aca64dc2e2185fe46f59f67"
 url = "https://releases.hashicorp.com/terraform/1.17.0/terraform_1.17.0_linux_amd64.zip"
+
+[[tools.trivy]]
+version = "0.76.1"
+backend = "aqua:aquasecurity/trivy"
+specifiers = ["0.76.1"]
+
+[tools.trivy."platforms.linux-x64"]
+checksum = "sha256:c7cbe3137fb8a48a17574bede3dd6beb16742d1e9772929940fc90082c39d9c0"
+url = "https://github.com/aquasecurity/trivy/releases/download/v0.76.1/trivy_0.76.1_Linux-64bit.tar.gz"
+url_api = "https://api.github.com/repos/aquasecurity/trivy/releases/assets/662254617"
+provenance = "cosign"
