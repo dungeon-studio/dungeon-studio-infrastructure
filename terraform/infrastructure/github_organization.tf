@@ -17,6 +17,7 @@ locals {
     "actions/cache@*",
     "amannn/action-semantic-pull-request@*",
     "dorny/paths-filter@*",
+    "jdx/mise-action@*",
     "lycheeverse/lychee-action@*",
     "peter-evans/create-issue-from-file@*",
     "peter-evans/create-pull-request@*",
