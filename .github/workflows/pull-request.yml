@@ -18,7 +18,7 @@ jobs:
   # plans.
   terraform-plan:
     name: Plan Terraform infrastructure layer
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
 
     # The read-only deployer can read the GitHub App's private key. GitHub
