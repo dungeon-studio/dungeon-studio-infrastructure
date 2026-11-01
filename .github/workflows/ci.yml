@@ -27,7 +27,7 @@ jobs:
   # shells out to a binary the runner lacks also needs an install step below.
   pre-commit:
     name: Run pre-commit hooks
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
 
     env:
@@ -80,7 +80,7 @@ jobs:
   # fork pull requests run this job too.
   terraform-validate:
     name: Validate Terraform
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
 
     env:
