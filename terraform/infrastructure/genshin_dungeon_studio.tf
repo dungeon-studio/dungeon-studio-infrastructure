@@ -55,7 +55,6 @@ module "genshin_dungeon_studio" {
 
   legacy = {
     squash_only                      = true
-    allowed_action_patterns          = local.allowed_action_patterns
     can_approve_pull_request_reviews = true
     dependabot_security_updates      = true
   }
