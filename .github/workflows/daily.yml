@@ -15,7 +15,7 @@ permissions:
 jobs:
   dispatch-unapplied:
     name: Dispatch apply for unapplied merges
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
 
     permissions:
@@ -42,7 +42,7 @@ jobs:
   # Bootstrap is left out: CI cannot read its state (README §Layout).
   terraform-drift:
     name: Check infrastructure layer for drift
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
 
     # The dispatched apply closes the diff this plan would report, and the
