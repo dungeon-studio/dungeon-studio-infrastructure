@@ -26,17 +26,19 @@ environment; the apex zone here delegates to it over NS.
 
 ## Getting started
 
-Install [just](https://just.systems) and [pre-commit](https://pre-commit.com),
-then put the commit gate in place:
+Open the repository in its devcontainer, or run
+[`mise install`](https://mise.jdx.dev). Either installs the tool versions
+continuous integration uses. Then put the commit gate in place:
 
 ```sh
 pre-commit install
 ```
 
-Every check this repository enforces runs through pre-commit, so that one
-command is the whole local setup.
+Every check this repository enforces runs through pre-commit, so these two
+steps are the whole local setup.
 
-These recipes make up the operator surface:
+These recipes make up the operator surface. They need cloud credentials,
+which the devcontainer doesn't hold, so run them on the host:
 
 - `just bootstrap` — creates the `dungeon-studio-infrastructure` project, the
   `dungeon-studio-tfstate` state bucket, the Workload Identity Federation pool,
