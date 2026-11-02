@@ -26,8 +26,11 @@ environment; the apex zone here delegates to it over NS.
 
 ## Getting started
 
-Install [just](https://just.systems) and [pre-commit](https://pre-commit.com),
-then put the commit gate in place:
+Open the repository in its devcontainer, or run `mise install` with
+[mise](https://mise.jdx.dev). Either installs the tool versions continuous
+integration uses, from `mise.toml`. The devcontainer holds no cloud
+credentials, so it covers the hooks and `terraform validate` but not plan or
+apply. Then put the commit gate in place:
 
 ```sh
 pre-commit install
