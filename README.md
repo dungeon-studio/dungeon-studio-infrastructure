@@ -36,8 +36,8 @@ apply. Then put the commit gate in place:
 pre-commit install
 ```
 
-Every check this repository enforces runs through pre-commit, so that one
-command is the whole local setup.
+Every check this repository enforces runs through pre-commit, so these two
+steps are the whole local setup.
 
 These recipes make up the operator surface:
 
