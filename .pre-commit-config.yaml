@@ -93,7 +93,7 @@ repos:
   # GitHub Actions static analysis. Offline needs no credentials; the
   # online supply-chain audits need a token.
   - repo: https://github.com/zizmorcore/zizmor-pre-commit
-    rev: v1.31.1
+    rev: v1.32.0
     hooks:
       - id: zizmor
         args: [--no-progress, --offline]
