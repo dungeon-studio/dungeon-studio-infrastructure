@@ -26,9 +26,8 @@ locals {
 
   protected_refs = concat(local.develop_refs, local.flow.release_refs)
 
-  # The provider sends the squash commit settings only when squash merges are
-  # allowed, so GitHub keeps its defaults otherwise. Null plans those same
-  # defaults.
+  # Null squash commit settings plan the defaults GitHub keeps when squash
+  # merges are off, because the provider sends them only when they're on.
   squash_merges = contains(local.flow.merge_methods, "squash")
 }
 
