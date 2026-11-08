@@ -25,6 +25,10 @@ locals {
   }
 
   protected_refs = concat(local.develop_refs, local.flow.release_refs)
+
+  # Null squash commit settings plan the defaults GitHub keeps when squash
+  # merges are off, because the provider sends them only when they're on.
+  squash_merges = contains(local.flow.merge_methods, "squash")
 }
 
 # Public because the org is on GitHub Free, where a private repository cannot
@@ -44,12 +48,12 @@ resource "github_repository" "this" {
   has_wiki                    = false
   has_discussions             = var.has_discussions
   allow_merge_commit          = contains(local.flow.merge_methods, "merge")
-  allow_squash_merge          = contains(local.flow.merge_methods, "squash")
+  allow_squash_merge          = local.squash_merges
   allow_rebase_merge          = false
   allow_auto_merge            = var.renovate_automerge
   allow_update_branch         = true
-  squash_merge_commit_title   = "PR_TITLE"
-  squash_merge_commit_message = "PR_BODY"
+  squash_merge_commit_title   = local.squash_merges ? "PR_TITLE" : null
+  squash_merge_commit_message = local.squash_merges ? "PR_BODY" : null
   merge_commit_title          = "MERGE_MESSAGE"
   merge_commit_message        = "PR_TITLE"
   delete_branch_on_merge      = true
