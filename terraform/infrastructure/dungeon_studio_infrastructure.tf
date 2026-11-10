@@ -11,6 +11,18 @@ module "dungeon_studio_infrastructure" {
   name        = local.infrastructure_repository
   description = "Organization infrastructure as code for Dungeon Studio, managed with Terraform."
 
+  # A Renovate merge applies the infrastructure layer, so these checks are the
+  # only gate on that apply.
+  required_status_checks = {
+    contexts = [
+      "Plan Terraform infrastructure layer",
+      "Run pre-commit hooks",
+      "Validate Terraform",
+    ]
+  }
+  require_code_owner_review = true
+  renovate_automerge        = true
+
   org_allowed_action_patterns = local.org_allowed_action_patterns
 }
 
