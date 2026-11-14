@@ -35,13 +35,7 @@ jobs:
           HEAD_REF: ${{ github.head_ref }}
         run: |
           set -euo pipefail
-          if [[ "${BASE_REF}" != main ]]; then
-            exit 0
+          if [[ "${BASE_REF}" == main && "${HEAD_REF}" != release/* && "${HEAD_REF}" != hotfix/* ]]; then
+            echo "::error::Pull requests into main come from release/* or hotfix/*, not ${HEAD_REF}."
+            exit 1
           fi
-          case "${HEAD_REF}" in
-            release/* | hotfix/*) ;;
-            *)
-              echo "::error::Pull requests into main come from release/* or hotfix/*, not ${HEAD_REF}."
-              exit 1
-              ;;
-          esac
