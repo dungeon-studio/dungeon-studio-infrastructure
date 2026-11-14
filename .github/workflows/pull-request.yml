@@ -83,11 +83,11 @@ jobs:
             const summary = summaryLine ? summaryLine[0] : 'Plan generated';
             // GitHub rejects a comment over 65,536 characters; the Plan
             // step's log keeps the whole plan.
-            const limit = 60000;
+            const maxPlanLength = 60000;
             const { owner, repo } = context.repo;
-            const run = `${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}`;
-            const shown = plan.length > limit
-              ? `${plan.slice(0, limit)}\n… truncated; the full plan is in ${run}`
+            const runUrl = `${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}`;
+            const planText = plan.length > maxPlanLength
+              ? `${plan.slice(0, maxPlanLength)}\n… truncated; the full plan is in ${runUrl}`
               : plan;
             const marker = '<!-- terraform-plan:infrastructure -->';
             const body = [
@@ -100,7 +100,7 @@ jobs:
               '<summary>Show full plan output</summary>',
               '',
               '```',
-              shown,
+              planText,
               '```',
               '</details>',
             ].join('\n');
