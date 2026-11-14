@@ -69,6 +69,7 @@ jobs:
       - name: Initialize Terraform
         run: terraform init -input=false
 
+      # The comment step reads plan.txt from the workspace root.
       - name: Plan
         run: '"${GITHUB_WORKSPACE}/scripts/plan-terraform.sh"'
 

@@ -3,9 +3,8 @@
 # SPDX-License-Identifier: MIT
 #
 # Plans the Terraform layer in the current directory and writes the plan's
-# text to plan.txt in the workspace root, where the pull request comment step
-# reads it. Retries a plan that fails on a transient upstream error so a
-# provider API blip doesn't fail the required check.
+# text to plan.txt in the workspace root. It retries a plan that fails on a
+# transient provider error, so an outage doesn't fail the required check.
 
 set -euo pipefail
 
@@ -13,8 +12,8 @@ readonly max_attempts=3
 readonly backoff_seconds=30
 readonly log=plan.log
 
-# Google's IAM credentials API and Grafana both surface outages as a 5xx or a
-# timeout. Configuration, permission, and other 4xx errors don't match.
+# Matches how the Google and Grafana clients report a 5xx or a timeout.
+# Configuration, permission, and other 4xx errors fail without a retry.
 is_transient_failure() {
   grep -qE '(status( code)?|Error) 5[0-9]{2}|request timeout|i/o timeout|deadline exceeded' "${log}"
 }
