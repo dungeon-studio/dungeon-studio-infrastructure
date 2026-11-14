@@ -24,6 +24,7 @@ module "genshin_dungeon_studio" {
       "Scan Terraform",
       "Smoke-test dev stack",
       "Test against Firestore",
+      "Verify toolchain",
     ]
   }
   require_code_owner_review = true
