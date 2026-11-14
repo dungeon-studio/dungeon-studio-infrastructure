@@ -3,8 +3,9 @@
 ---
 name: Pull request edited
 
-# Retargeting a pull request's base sends only edited; without it, a pass
-# recorded against the old base would still count on the head commit.
+# Run on every pull request: a required check that never reports blocks the
+# merge. Retargeting a pull request's base sends only edited; without it, a
+# pass recorded against the old base would still count on the head commit.
 on:
   pull_request:
     types: [opened, edited, reopened, synchronize]
@@ -19,8 +20,6 @@ concurrency:
 jobs:
   # Rulesets on GitHub Free cannot restrict a pull request's source branch, so
   # the github_repository module requires this check on main and release/**.
-  # Run it on every pull request: a required check that never reports blocks
-  # the merge.
   git-flow-source:
     name: Check Git flow source branch
     runs-on: ubuntu-26.04
