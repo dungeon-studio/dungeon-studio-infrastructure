@@ -122,7 +122,6 @@ repos:
         files: ^justfile$
         pass_filenames: false
 
-      # Renovate needs language: python to update additional_dependencies.
       - id: check-required-status-checks
         name: Check required status checks report on every pull request
         entry: scripts/check-required-status-checks.py

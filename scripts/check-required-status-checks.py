@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
-"""Fail when this repository requires a status check no pull request reports.
+"""Fail when a required status check names no job that runs on every pull request.
 
 The checks rulesets have no bypass actors, so a required context that never
-reports blocks every merge, the admin's included. Each context the module call
-requires must match the name of a job in a workflow that runs on every pull
-request.
+reports blocks every merge, the admin's included.
 """
 
 import sys
@@ -57,7 +55,7 @@ def required_contexts() -> set[str]:
 
 
 def triggers(workflow: dict) -> dict:
-    """Return a workflow's on: as a mapping from event to its filters."""
+    """Map each event in on: to its filters, whether on: is a string, list, or mapping."""
     # YAML 1.1 reads the bare key on as true.
     on = workflow.get("on", workflow.get(True))
     if isinstance(on, str):
