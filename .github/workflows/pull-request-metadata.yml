@@ -1,0 +1,47 @@
+# SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
+# SPDX-License-Identifier: MIT
+---
+name: Pull request metadata
+
+# Checks that read the pull request itself rather than its code, so they take
+# the edited trigger: retargeting a pull request's base sends only edited.
+# Without it, a pass from before the retarget would still stand on the head
+# commit.
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Rulesets on GitHub Free cannot restrict a pull request's source branch, so
+  # the github_repository module requires this job on main and release/**. It
+  # must run on every pull request; a required check that never reports
+  # blocks the merge.
+  git-flow-source:
+    name: Check Git flow source branch
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+
+    steps:
+      - name: Check the source branch
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          set -euo pipefail
+          if [[ "${BASE_REF}" != main ]]; then
+            exit 0
+          fi
+          case "${HEAD_REF}" in
+            release/* | hotfix/*) ;;
+            *)
+              echo "::error::Pull requests into main come from release/* or hotfix/*, not ${HEAD_REF}."
+              exit 1
+              ;;
+          esac
