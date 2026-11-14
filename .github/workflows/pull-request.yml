@@ -69,25 +69,8 @@ jobs:
       - name: Initialize Terraform
         run: terraform init -input=false
 
-      # Provider APIs (Google IAM credentials, Grafana) intermittently return
-      # 5xx or time out. Retrying only on that output leaves configuration
-      # and permission errors failing on the first attempt.
-      # The comment step reads plan.txt from the workspace root.
       - name: Plan
-        run: |
-          set -euo pipefail
-          transient='(status( code)?|Error) 5[0-9]{2}|request timeout|i/o timeout|deadline exceeded'
-          for attempt in 1 2 3; do
-            if terraform plan -input=false -lock=false -no-color -out=tfplan 2>&1 | tee plan.log; then
-              break
-            fi
-            if [[ "${attempt}" -eq 3 ]] || ! grep -qE "${transient}" plan.log; then
-              exit 1
-            fi
-            echo "::warning::Plan attempt ${attempt} hit a transient upstream error; retrying."
-            sleep $((30 * attempt))
-          done
-          terraform show -no-color tfplan >"${GITHUB_WORKSPACE}/plan.txt"
+        run: '"${GITHUB_WORKSPACE}/scripts/plan-terraform.sh"'
 
       - name: Comment the plan on the pull request
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
