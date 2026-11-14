@@ -81,8 +81,8 @@ jobs:
             const plan = fs.readFileSync('plan.txt', 'utf8');
             const summaryLine = plan.match(/^(No changes\..+|Plan: .+)$/m);
             const summary = summaryLine ? summaryLine[0] : 'Plan generated';
-            // GitHub rejects a comment over 65,536 characters; the Plan
-            // step's log keeps the whole plan.
+            // GitHub rejects a comment over 65,536 characters. The Plan step's
+            // log keeps the whole plan.
             const maxPlanLength = 60000;
             const { owner, repo } = context.repo;
             const runUrl = `${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}`;
@@ -97,7 +97,7 @@ jobs:
               `**${summary}**`,
               '',
               '<details>',
-              '<summary>Show full plan output</summary>',
+              '<summary>Show plan output</summary>',
               '',
               '```',
               planText,
