@@ -228,9 +228,10 @@ locals {
   # GitHub Free cannot restrict a pull request's source branch. It fails a
   # pull request into main from anything but release/* or hotfix/*.
   git_flow_source_check = "Check Git flow source branch"
+  ci_results_check      = "Check CI results"
 
   required_checks = var.required_status_checks == null ? [] : concat(
-    var.required_status_checks.ci_results_check ? ["Check CI results"] : [],
+    var.required_status_checks.ci_results_check ? [local.ci_results_check] : [],
     var.required_status_checks.contexts,
   )
 
