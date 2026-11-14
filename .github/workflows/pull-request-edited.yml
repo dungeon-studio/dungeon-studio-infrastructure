@@ -1,11 +1,10 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 ---
-name: Pull request metadata
+name: Pull request edited
 
-# Checks that read the pull request rather than its code. Retargeting a pull
-# request's base sends only edited; without it, a pass recorded against the
-# old base would still count on the head commit.
+# Retargeting a pull request's base sends only edited; without it, a pass
+# recorded against the old base would still count on the head commit.
 on:
   pull_request:
     types: [opened, edited, reopened, synchronize]
