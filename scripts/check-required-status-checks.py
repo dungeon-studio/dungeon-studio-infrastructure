@@ -10,69 +10,88 @@ request.
 """
 
 import sys
+from collections.abc import Iterator
 from pathlib import Path
 
 import hcl2
 import yaml
 from hcl2.utils import SerializationOptions
 
-MODULE_FILE = Path("terraform/infrastructure/dungeon_studio_infrastructure.tf")
-MODULE_NAME = "dungeon_studio_infrastructure"
+MODULE_CALL_FILE = Path("terraform/infrastructure/dungeon_studio_infrastructure.tf")
+MODULE_CALL_NAME = "dungeon_studio_infrastructure"
+MODULE_FILE = Path("terraform/modules/github_repository/main.tf")
 WORKFLOWS = Path(".github/workflows")
-
-# Mirror the contexts terraform/modules/github_repository/main.tf adds to
-# checks_refs beyond required_status_checks.contexts.
-CI_RESULTS_CHECK = "Check CI results"
-GIT_FLOW_SOURCE_CHECK = "Check Git flow source branch"
 
 # Any of these on the pull_request trigger skips some pull requests.
 PULL_REQUEST_FILTERS = {"branches", "branches-ignore", "paths", "paths-ignore"}
 
 
-def required_contexts() -> set[str]:
-    with MODULE_FILE.open() as f:
-        tf = hcl2.load(f, serialization_options=SerializationOptions(strip_string_quotes=True))
-    module = next(m[MODULE_NAME] for m in tf.get("module", []) if MODULE_NAME in m)
+def load_hcl(path: Path) -> dict:
+    with path.open() as f:
+        return hcl2.load(f, serialization_options=SerializationOptions(strip_string_quotes=True))
 
-    checks = module.get("required_status_checks")
+
+def load_module_call() -> dict:
+    modules = load_hcl(MODULE_CALL_FILE).get("module", [])
+    return next(m[MODULE_CALL_NAME] for m in modules if MODULE_CALL_NAME in m)
+
+
+def load_module_locals() -> dict:
+    return {k: v for block in load_hcl(MODULE_FILE).get("locals", []) for k, v in block.items()}
+
+
+def required_contexts() -> set[str]:
+    """Mirror the contexts main.tf's checks_refs requires across every ref."""
+    module_call = load_module_call()
+    checks = module_call.get("required_status_checks")
     if checks is None:
         return set()
 
+    module_locals = load_module_locals()
     contexts = set(checks.get("contexts", []))
     if checks.get("ci_results_check", False):
-        contexts.add(CI_RESULTS_CHECK)
-    if not module.get("legacy", {}).get("squash_only", False):
-        contexts.add(GIT_FLOW_SOURCE_CHECK)
+        contexts.add(module_locals["ci_results_check"])
+    if not module_call.get("legacy", {}).get("squash_only", False):
+        contexts.add(module_locals["git_flow_source_check"])
     return contexts
 
 
-def runs_on_every_pull_request(workflow: dict) -> bool:
+def triggers(workflow: dict) -> dict:
+    """Return a workflow's on: as a mapping from event to its filters."""
     # YAML 1.1 reads the bare key on as true.
-    triggers = workflow.get("on", workflow.get(True))
-    if isinstance(triggers, str):
-        return triggers == "pull_request"
-    if isinstance(triggers, list):
-        return "pull_request" in triggers
-    if isinstance(triggers, dict) and "pull_request" in triggers:
-        return not PULL_REQUEST_FILTERS & set(triggers["pull_request"] or {})
-    return False
+    on = workflow.get("on", workflow.get(True))
+    if isinstance(on, str):
+        on = [on]
+    if isinstance(on, list):
+        return dict.fromkeys(on)
+    return on or {}
+
+
+def runs_on_every_pull_request(workflow: dict) -> bool:
+    on = triggers(workflow)
+    return "pull_request" in on and not PULL_REQUEST_FILTERS & set(on["pull_request"] or {})
+
+
+def load_workflows() -> Iterator[dict]:
+    for path in sorted([*WORKFLOWS.glob("*.yml"), *WORKFLOWS.glob("*.yaml")]):
+        yield yaml.safe_load(path.read_text()) or {}
 
 
 def reported_contexts() -> set[str]:
-    names = set()
-    for path in sorted([*WORKFLOWS.glob("*.yml"), *WORKFLOWS.glob("*.yaml")]):
-        workflow = yaml.safe_load(path.read_text())
-        if runs_on_every_pull_request(workflow):
-            # A job without a name reports under its id.
-            names.update(job.get("name", job_id) for job_id, job in workflow.get("jobs", {}).items())
-    return names
+    # A job without a name reports under its id.
+    return {
+        job.get("name", job_id)
+        for workflow in load_workflows()
+        if runs_on_every_pull_request(workflow)
+        for job_id, job in workflow.get("jobs", {}).items()
+    }
 
 
 def main() -> int:
     missing = sorted(required_contexts() - reported_contexts())
     for context in missing:
         print(
-            f"{MODULE_FILE}: required check {context!r} matches no job in a workflow that runs on every pull request",
+            f"{MODULE_CALL_FILE}: required check {context!r} matches no job in a workflow that runs on every pull request",
             file=sys.stderr,
         )
     return 1 if missing else 0
