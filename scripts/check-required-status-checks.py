@@ -8,7 +8,7 @@ reports blocks every merge, the admin's included.
 """
 
 import sys
-from collections.abc import Iterator
+from collections.abc import Iterable, Iterator
 from pathlib import Path
 
 import hcl2
@@ -40,14 +40,12 @@ def load_module_locals() -> dict:
     return {k: v for block in load_hcl(MODULE_FILE).get("locals", []) for k, v in block.items()}
 
 
-def required_contexts() -> set[str]:
+def required_contexts(module_call: dict, module_locals: dict) -> set[str]:
     """Mirror the contexts main.tf's checks_refs requires across every ref."""
-    module_call = load_module_call()
     checks = module_call.get("required_status_checks")
     if checks is None:
         return set()
 
-    module_locals = load_module_locals()
     contexts = set(checks.get("contexts", []))
     if checks.get("ci_results_check", False):
         contexts.add(module_locals["ci_results_check"])
@@ -83,18 +81,19 @@ def load_workflows() -> Iterator[dict]:
         yield yaml.safe_load(path.read_text()) or {}
 
 
-def reported_contexts() -> set[str]:
+def reported_contexts(workflows: Iterable[dict]) -> set[str]:
     # A job without a name reports under its id.
     return {
         job.get("name", job_id)
-        for workflow in load_workflows()
+        for workflow in workflows
         if runs_on_every_pull_request(workflow)
         for job_id, job in workflow.get("jobs", {}).items()
     }
 
 
 def main() -> int:
-    missing = sorted(required_contexts() - reported_contexts())
+    required = required_contexts(load_module_call(), load_module_locals())
+    missing = sorted(required - reported_contexts(load_workflows()))
     for context in missing:
         print(
             f"{MODULE_CALL_FILE}: required check {context!r} matches no job in a workflow that runs on every pull request",
