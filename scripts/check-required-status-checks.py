@@ -20,11 +20,9 @@ MODULE_CALL_NAME = "dungeon_studio_infrastructure"
 MODULE_FILE = Path("terraform/modules/github_repository/main.tf")
 WORKFLOWS = Path(".github/workflows")
 
-# Any of these on the pull_request trigger skips some pull requests.
 PULL_REQUEST_FILTERS = {"branches", "branches-ignore", "paths", "paths-ignore"}
 
-# GitHub's default pull_request types; a types: list missing one skips some
-# pull requests.
+# GitHub's types when pull_request lists none.
 PULL_REQUEST_DEFAULT_TYPES = {"opened", "synchronize", "reopened"}
 
 
@@ -70,13 +68,14 @@ def triggers(workflow: dict) -> dict:
     return on if isinstance(on, dict) else dict.fromkeys(as_set(on))
 
 
+def skips_some_pull_requests(pull_request: dict) -> bool:
+    types = as_set(pull_request.get("types", PULL_REQUEST_DEFAULT_TYPES))
+    return bool(PULL_REQUEST_FILTERS & pull_request.keys()) or not PULL_REQUEST_DEFAULT_TYPES <= types
+
+
 def runs_on_every_pull_request(workflow: dict) -> bool:
     on = triggers(workflow)
-    if "pull_request" not in on:
-        return False
-    pull_request = on["pull_request"] or {}
-    types = as_set(pull_request.get("types", PULL_REQUEST_DEFAULT_TYPES))
-    return not PULL_REQUEST_FILTERS & set(pull_request) and PULL_REQUEST_DEFAULT_TYPES <= types
+    return "pull_request" in on and not skips_some_pull_requests(on["pull_request"] or {})
 
 
 def load_workflows() -> Iterator[dict]:
