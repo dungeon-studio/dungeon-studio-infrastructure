@@ -5,9 +5,8 @@
 # Pre-commit hooks for code quality and consistency
 # See https://pre-commit.com for more information
 
-# pre-commit skips executables under a shims/ directory when detecting a
-# system Node, so without this it builds its own through nodeenv instead of
-# using the one mise.toml pins.
+# Run Node hooks on the Node that mise.toml pins rather than one the hook
+# runner downloads.
 default_language_version:
   node: system
 
