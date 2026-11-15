@@ -11,7 +11,7 @@
       "automerge": false
     },
     {
-      "description": "A merge to develop applies the infrastructure layer with this Terraform version",
+      "description": "CI applies with the terraform CLI mise.toml pins, so a CLI update carries the same risk as a provider update",
       "matchManagers": ["mise"],
       "matchDepNames": ["terraform"],
       "automerge": false
