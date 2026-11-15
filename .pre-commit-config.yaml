@@ -2,11 +2,9 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-# Pre-commit hooks for code quality and consistency
-# See https://prek.j178.dev for more information
+# prek reads this file: https://prek.j178.dev
 
-# Run Node hooks on the Node that mise.toml pins rather than one the hook
-# runner downloads.
+# Use the Node that mise.toml pins instead of downloading one.
 default_language_version:
   node: system
 
@@ -67,8 +65,8 @@ repos:
     rev: v3.13.1-1
     hooks:
       - id: shfmt
-        # Keep --write. It is one of the hook's default args, and pre-commit
-        # replaces those wholesale rather than appending; without it shfmt
+        # Keep --write. It is one of the hook's default args, and the hook
+        # runner replaces those wholesale rather than appending; without it shfmt
         # writes to stdout and exits 0 on files it would have rewritten.
         args: [--write, -i, '2', -ci]
 
