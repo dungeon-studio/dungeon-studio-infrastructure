@@ -36,17 +36,21 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Set up hook tools
+      - name: Set up pre-commit and hook tools
         uses: jdx/mise-action@f5be966e4a917d54244728e6a5fdcd1d93a35e6c # v5.2.6
 
+      - name: Cache hook environments per hook and tool version
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit-${{ hashFiles('.pre-commit-config.yaml', 'mise.lock') }}
+
       - name: Run hooks
-        uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd # v3.0.1
         env:
           # A push-event checkout is attached to the very branch
           # no-commit-to-branch guards, so the hook would fail every merge.
           SKIP: no-commit-to-branch
-        with:
-          extra_args: --all-files
+        run: pre-commit run --all-files --show-diff-on-failure --color=always
 
   # The commit hooks omit terraform_validate because it needs an initialized
   # working directory. Initializing without a backend needs no credentials, so
