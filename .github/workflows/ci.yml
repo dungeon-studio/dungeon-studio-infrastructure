@@ -25,7 +25,7 @@ concurrency:
 jobs:
   # Adding a hook to .pre-commit-config.yaml is usually all it takes. One that
   # shells out to a binary the runner lacks also needs an entry in mise.toml.
-  pre-commit:
+  hooks:
     name: Run pre-commit hooks
     runs-on: ubuntu-26.04
     timeout-minutes: 10
