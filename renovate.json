@@ -6,12 +6,12 @@
   ],
   "packageRules": [
     {
-      "description": "A merge to develop applies the infrastructure layer, and a green plan shows only that the plan ran, not that the update changes nothing",
+      "description": "Merging to develop applies the infrastructure layer, and the plan check passes even when the plan changes resources",
       "matchManagers": ["terraform"],
       "automerge": false
     },
     {
-      "description": "CI applies with the terraform CLI mise.toml pins, so a CLI update carries the same risk as a provider update",
+      "description": "CI applies the infrastructure layer with this terraform version",
       "matchManagers": ["mise"],
       "matchDepNames": ["terraform"],
       "automerge": false
