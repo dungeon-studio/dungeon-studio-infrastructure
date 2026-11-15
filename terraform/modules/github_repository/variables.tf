@@ -24,6 +24,16 @@ variable "topics" {
   description = "GitHub topics applied to the repository."
 }
 
+variable "terraform_created" {
+  type        = bool
+  default     = false
+  description = <<-EOT
+    Set for a repository Terraform creates rather than imports. Terraform
+    gives it an initial commit and renames that commit's branch to
+    develop, which an imported repository already has.
+  EOT
+}
+
 variable "org_allowed_action_patterns" {
   type        = list(string)
   description = <<-EOT
