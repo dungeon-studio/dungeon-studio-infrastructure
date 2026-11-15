@@ -1,31 +1,20 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:best-practices",
-    "security:openssf-scorecard",
-    "customManagers:githubActionsVersions"
+    "github>dungeon-studio/renovate-config",
+    "github>dungeon-studio/renovate-config:automerge-minor"
   ],
-  "timezone": "Europe/London",
-  "reviewers": ["alunduil"],
-  "labels": ["dependencies"],
-  "pre-commit": {
-    "enabled": true
-  },
-  "minimumReleaseAge": "3 days",
-  "osvVulnerabilityAlerts": true,
   "packageRules": [
     {
-      "matchUpdateTypes": [
-        "pin",
-        "pinDigest",
-        "digest",
-        "lockFileMaintenance",
-        "lockfileUpdate",
-        "rollback",
-        "bump",
-        "replacement"
-      ],
-      "minimumReleaseAge": null
+      "description": "A merge to develop applies the infrastructure layer, and a green plan shows only that the plan ran, not that the update changes nothing",
+      "matchManagers": ["terraform"],
+      "automerge": false
+    },
+    {
+      "description": "A merge to develop applies the infrastructure layer with this Terraform version",
+      "matchManagers": ["mise"],
+      "matchDepNames": ["terraform"],
+      "automerge": false
     }
   ]
 }
