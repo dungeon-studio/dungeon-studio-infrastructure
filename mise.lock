@@ -21,15 +21,16 @@ specifiers = ["26.13.1"]
 checksum = "sha256:518674de2b621728a5e4486f5fb3b7d2900bb3cc4aa97969edaa463db99f9778"
 url = "https://nodejs.org/dist/v26.13.1/node-v26.13.1-linux-x64.tar.gz"
 
-[[tools.pre-commit]]
-version = "4.7.0"
-backend = "aqua:pre-commit/pre-commit"
-specifiers = ["4.7.0"]
+[[tools.prek]]
+version = "0.5.10"
+backend = "aqua:j178/prek"
+specifiers = ["0.5.10"]
 
-[tools.pre-commit."platforms.linux-x64"]
-checksum = "sha256:393488513aed286d7a5a978a1fe79b2f5a8802927242a2d241ff10c1a8e8c885"
-url = "https://github.com/pre-commit/pre-commit/releases/download/v4.7.0/pre-commit-4.7.0.pyz"
-url_api = "https://api.github.com/repos/pre-commit/pre-commit/releases/assets/637459099"
+[tools.prek."platforms.linux-x64"]
+checksum = "sha256:5c832a9ccd0855b7c054320d8921d90165a37459d3ac175923bdf121ff1aa9b1"
+url = "https://github.com/j178/prek/releases/download/v0.5.10/prek-x86_64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/j178/prek/releases/assets/707839458"
+provenance = "github-attestations"
 
 [[tools.python]]
 version = "3.15.2"

@@ -31,11 +31,11 @@ Open the repository in its devcontainer, or run
 continuous integration uses. Then put the commit gate in place:
 
 ```sh
-pre-commit install
+prek install
 ```
 
-Every check this repository enforces runs through pre-commit, so these two
-steps are the whole local setup.
+Every check this repository enforces runs through
+[prek](https://prek.j178.dev), so these two steps are the whole local setup.
 
 These recipes make up the operator surface. They need cloud credentials,
 which the devcontainer doesn't hold, so run them on the host:
@@ -82,7 +82,7 @@ workflow tokens. The call names only what differs.
 
 ## Run the first-time bootstrap
 
-Beyond just and pre-commit you need:
+Beyond just and prek you need:
 
 - [Terraform](https://terraform.io) and the
   [gcloud CLI](https://cloud.google.com/sdk/docs/install)
