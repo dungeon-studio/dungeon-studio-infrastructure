@@ -29,6 +29,9 @@ locals {
   # Null squash commit settings plan the defaults GitHub keeps when squash
   # merges are off, because the provider sends them only when they're on.
   squash_merges = contains(local.flow.merge_methods, "squash")
+
+  # Null rather than false, so an imported repository plans no change.
+  terraform_created = var.terraform_created ? true : null
 }
 
 # Public because the org is on GitHub Free, where a private repository cannot
@@ -41,6 +44,7 @@ resource "github_repository" "this" {
   description  = var.description
   homepage_url = var.homepage_url
   topics       = var.topics
+  auto_init    = local.terraform_created
 
   visibility                  = "public"
   has_issues                  = true
@@ -63,6 +67,11 @@ resource "github_repository" "this" {
 resource "github_branch_default" "this" {
   repository = github_repository.this.name
   branch     = local.develop_branch
+  rename     = local.terraform_created
+
+  # GitHub renames asynchronously, and main can't be cut from develop until
+  # the rename frees main's name.
+  wait_for_rename = local.terraform_created
 }
 
 resource "github_branch" "long_lived" {
