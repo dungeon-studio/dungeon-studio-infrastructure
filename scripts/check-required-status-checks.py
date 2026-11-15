@@ -58,15 +58,16 @@ def required_contexts() -> set[str]:
     return contexts
 
 
+def as_set(value: str | list[str]) -> set[str]:
+    """GitHub Actions accepts a single string wherever it takes a list."""
+    return {value} if isinstance(value, str) else set(value)
+
+
 def triggers(workflow: dict) -> dict:
     """Map each event in on: to its filters, whether on: is a string, list, or mapping."""
     # YAML 1.1 reads the bare key on as true.
-    on = workflow.get("on", workflow.get(True))
-    if isinstance(on, str):
-        on = [on]
-    if isinstance(on, list):
-        return dict.fromkeys(on)
-    return on or {}
+    on = workflow.get("on", workflow.get(True)) or {}
+    return on if isinstance(on, dict) else dict.fromkeys(as_set(on))
 
 
 def runs_on_every_pull_request(workflow: dict) -> bool:
@@ -74,8 +75,7 @@ def runs_on_every_pull_request(workflow: dict) -> bool:
     if "pull_request" not in on:
         return False
     pull_request = on["pull_request"] or {}
-    types = pull_request.get("types", PULL_REQUEST_DEFAULT_TYPES)
-    types = {types} if isinstance(types, str) else set(types)
+    types = as_set(pull_request.get("types", PULL_REQUEST_DEFAULT_TYPES))
     return not PULL_REQUEST_FILTERS & set(pull_request) and PULL_REQUEST_DEFAULT_TYPES <= types
 
 
