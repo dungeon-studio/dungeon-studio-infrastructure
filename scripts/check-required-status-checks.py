@@ -21,8 +21,6 @@ MODULE_FILE = Path("terraform/modules/github_repository/main.tf")
 WORKFLOWS = Path(".github/workflows")
 
 PULL_REQUEST_FILTERS = {"branches", "branches-ignore", "paths", "paths-ignore"}
-
-# GitHub's types when pull_request lists none.
 PULL_REQUEST_DEFAULT_TYPES = {"opened", "synchronize", "reopened"}
 
 
@@ -41,7 +39,7 @@ def load_module_locals() -> dict:
 
 
 def required_contexts(module_call: dict, module_locals: dict) -> set[str]:
-    """Mirror the contexts main.tf's checks_refs requires across every ref."""
+    """Mirror main.tf's checks_refs: every context a checks ruleset requires."""
     checks = module_call.get("required_status_checks")
     if checks is None:
         return set()
@@ -60,7 +58,7 @@ def as_set(value: str | list[str]) -> set[str]:
 
 
 def triggers(workflow: dict) -> dict:
-    """Map each event in on: to its filters, whether on: is a string, list, or mapping."""
+    """Map each event in on: to its filters."""
     # YAML 1.1 reads the bare key on as true.
     on = workflow.get("on", workflow.get(True)) or {}
     return on if isinstance(on, dict) else dict.fromkeys(as_set(on))
