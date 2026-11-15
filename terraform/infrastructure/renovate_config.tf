@@ -1,10 +1,14 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
+locals {
+  renovate_config_repository = "renovate-config"
+}
+
 module "renovate_config" {
   source = "../modules/github_repository"
 
-  name        = "renovate-config"
+  name        = local.renovate_config_repository
   description = "Shared Renovate preset for Dungeon Studio's repositories."
   topics      = ["renovate", "renovate-config", "dependency-management"]
 
@@ -17,5 +21,5 @@ module "renovate_config" {
 # Actions settings already match the config, so adopt them instead.
 import {
   to = module.renovate_config.github_actions_repository_permissions.this
-  id = "renovate-config"
+  id = local.renovate_config_repository
 }
