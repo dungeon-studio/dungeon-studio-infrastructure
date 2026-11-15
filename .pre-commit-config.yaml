@@ -121,3 +121,19 @@ repos:
         language: system
         files: ^justfile$
         pass_filenames: false
+
+      - id: check-required-status-checks
+        name: Check required status checks report on every pull request
+        entry: scripts/check-required-status-checks.py
+        language: python
+        additional_dependencies:
+          - python-hcl2==8.2.0
+          - pyyaml==6.0.3
+        files: |
+          (?x)^(
+            \.github/workflows/|
+            terraform/infrastructure/dungeon_studio_infrastructure\.tf$|
+            terraform/modules/github_repository/main\.tf$|
+            scripts/check-required-status-checks\.py$
+          )
+        pass_filenames: false
