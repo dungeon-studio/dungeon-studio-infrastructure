@@ -35,8 +35,7 @@ prek install
 ```
 
 Every check this repository enforces runs through
-[prek](https://prek.j178.dev), so these two
-steps are the whole local setup.
+[prek](https://prek.j178.dev), so these two steps are the whole local setup.
 
 These recipes make up the operator surface. They need cloud credentials,
 which the devcontainer doesn't hold, so run them on the host:

@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 # Pre-commit hooks for code quality and consistency
-# See https://pre-commit.com for more information
+# See https://prek.j178.dev for more information
 
 # Run Node hooks on the Node that mise.toml pins rather than one the hook
 # runner downloads.
