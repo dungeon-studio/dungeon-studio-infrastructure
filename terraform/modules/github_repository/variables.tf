@@ -45,9 +45,9 @@ variable "required_status_checks" {
 
     contexts are GitHub Actions check-run names, each unique on a pull
     request. A missing check blocks every merge, the admin's included,
-    so leave out path-gated jobs. A check must fail only on what the pull
-    request changes, so leave out dependency scans: they fail on newly
-    disclosed advisories.
+    so leave out jobs that skip some pull requests. A check must fail
+    only on what the pull request changes, so leave out dependency scans:
+    they fail on newly disclosed advisories.
 
     strict requires a pull request into develop to be up to date; main
     and release/** always require it. It defaults to false under
