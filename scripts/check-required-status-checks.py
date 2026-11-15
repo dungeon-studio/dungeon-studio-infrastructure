@@ -23,6 +23,10 @@ WORKFLOWS = Path(".github/workflows")
 # Any of these on the pull_request trigger skips some pull requests.
 PULL_REQUEST_FILTERS = {"branches", "branches-ignore", "paths", "paths-ignore"}
 
+# GitHub's default pull_request types; a types: list missing one skips some
+# pull requests.
+PULL_REQUEST_DEFAULT_TYPES = {"opened", "synchronize", "reopened"}
+
 
 def load_hcl(path: Path) -> dict:
     with path.open() as f:
@@ -67,7 +71,12 @@ def triggers(workflow: dict) -> dict:
 
 def runs_on_every_pull_request(workflow: dict) -> bool:
     on = triggers(workflow)
-    return "pull_request" in on and not PULL_REQUEST_FILTERS & set(on["pull_request"] or {})
+    if "pull_request" not in on:
+        return False
+    pull_request = on["pull_request"] or {}
+    types = pull_request.get("types", PULL_REQUEST_DEFAULT_TYPES)
+    types = {types} if isinstance(types, str) else set(types)
+    return not PULL_REQUEST_FILTERS & set(pull_request) and PULL_REQUEST_DEFAULT_TYPES <= types
 
 
 def load_workflows() -> Iterator[dict]:
