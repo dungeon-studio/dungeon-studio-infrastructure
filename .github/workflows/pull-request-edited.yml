@@ -4,8 +4,8 @@
 name: Pull request edited
 
 # Run on every pull request: a required check that never reports blocks the
-# merge. Retargeting a pull request's base sends only edited; without it, a
-# pass recorded against the old base would still count on the head commit.
+# merge. Retargeting a base sends only edited, which reruns the check against
+# the new base.
 on:
   pull_request:
     types: [opened, edited, reopened, synchronize]
