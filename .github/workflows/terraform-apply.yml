@@ -75,7 +75,7 @@ jobs:
       - name: Apply
         run: terraform apply -input=false -no-color tfplan
 
-      - name: Report the failure to the admin
+      - name: File a failure issue assigned to the admin
         if: failure() && github.ref == 'refs/heads/develop'
         env:
           GH_TOKEN: ${{ github.token }}
