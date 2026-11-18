@@ -71,6 +71,7 @@ jobs:
 
       # The comment step reads plan.txt from the workspace root.
       - name: Plan
+        id: plan
         run: '"${GITHUB_WORKSPACE}/scripts/plan-terraform.sh"'
 
       - name: Comment the plan on the pull request
@@ -122,3 +123,15 @@ jobs:
                 body,
               });
             }
+
+      # Merging applies the plan unread, so a dependency update must change
+      # nothing. Runs after the comment so the reviewer sees what it changes.
+      - name: Fail a dependency update whose plan changes resources
+        if: >-
+          steps.plan.outputs.changes == 'true' && (
+            github.event.pull_request.user.login == 'renovate[bot]' ||
+            contains(github.event.pull_request.labels.*.name, 'dependencies')
+          )
+        run: |
+          echo "::error::This dependency update changes resources; see the plan comment."
+          exit 1
