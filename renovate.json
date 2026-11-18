@@ -11,6 +11,16 @@
       "automerge": false
     },
     {
+      "description": "CI cannot plan the bootstrap layer",
+      "matchFileNames": ["terraform/bootstrap/**"],
+      "automerge": false
+    },
+    {
+      "description": "Each bootstrap run needs fresh Grafana Cloud and Cloudflare tokens",
+      "matchFileNames": ["terraform/bootstrap/**"],
+      "groupName": "bootstrap layer"
+    },
+    {
       "description": "CI applies the infrastructure layer with this terraform version",
       "matchManagers": ["mise"],
       "matchDepNames": ["terraform"],
