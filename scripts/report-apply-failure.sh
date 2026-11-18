@@ -4,8 +4,8 @@
 #
 # Reports a failed apply run to the admin through an issue assigned to them.
 # GitHub emails a failed run only to its triggering actor, which is a bot for
-# Renovate merges and Daily dispatches. Comments on the open report instead of
-# opening another, so the admin closes one issue per incident.
+# Renovate merges and Daily dispatches. Repeat failures land on the open
+# report, so each incident is one issue to close.
 
 set -euo pipefail
 
