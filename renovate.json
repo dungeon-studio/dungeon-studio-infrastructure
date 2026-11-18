@@ -11,10 +11,14 @@
       "automerge": false
     },
     {
-      "description": "CI cannot plan the bootstrap layer, so the admin plans each update by hand, and each run needs fresh tokens",
+      "description": "CI cannot plan the bootstrap layer, so the admin plans each update before merging it",
       "matchFileNames": ["terraform/bootstrap/**"],
-      "groupName": "bootstrap layer",
       "automerge": false
+    },
+    {
+      "description": "Each bootstrap plan needs freshly minted Grafana Cloud and Cloudflare tokens, so one pull request batches the updates",
+      "matchFileNames": ["terraform/bootstrap/**"],
+      "groupName": "bootstrap layer"
     },
     {
       "description": "CI applies the infrastructure layer with this terraform version",
