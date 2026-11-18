@@ -5,8 +5,7 @@
 # Plans the Terraform layer in the current directory and writes the plan's
 # text to plan.txt in the workspace root. It retries a plan that fails on a
 # transient provider error, so an outage doesn't fail the required check.
-# It sets the step output changes to true or false, so a later step can gate
-# on it after the plan is shown.
+# Its step output named changes is true when the plan would change resources.
 
 set -euo pipefail
 
@@ -14,7 +13,7 @@ readonly max_attempts=3
 readonly backoff_seconds=30
 readonly log=plan.log
 
-# terraform plan -detailed-exitcode's statuses besides 0, no changes.
+# Exit statuses of terraform plan -detailed-exitcode. 0 means no changes.
 readonly plan_failed=1
 readonly plan_has_changes=2
 

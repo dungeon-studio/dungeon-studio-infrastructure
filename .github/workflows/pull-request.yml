@@ -124,8 +124,9 @@ jobs:
               });
             }
 
-      # Merging applies the plan unread, so a dependency update must change
-      # nothing. Runs after the comment so the reviewer sees what it changes.
+      # A dependency update can merge without review, and merging applies its
+      # plan, so the plan must change nothing. This step follows the comment
+      # so a failure still shows the plan.
       - name: Fail a dependency update whose plan changes resources
         if: >-
           steps.plan.outputs.changes == 'true' && (
