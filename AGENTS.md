@@ -3,24 +3,23 @@
 
 # dungeon-studio-infrastructure — agent guide
 
-Canonical rules for every coding agent. A tool that reads only its
-own path gets a file there importing this one, holding only what is
-false for every other agent — `CLAUDE.md` is that case.
+These rules apply to every coding agent. A tool that reads only its
+own path gets a file there that imports this one and adds only rules
+false for every other agent. `CLAUDE.md` is that file for Claude
+Code.
 
 ## Contribution flow
 
-Merging to `develop` applies the infrastructure layer in CI, so an
-unrelated edit in a scoped PR ships infra the reviewer didn't ask
-for.
+Merging to `develop` applies the infrastructure layer in CI, so a
+PR ships everything in it.
 
 - **Open draft PRs only.** The default branch is `develop`, not
   `main`. Don't push to it; don't merge your own PRs. alunduil
   reviews and merges.
-- **Don't run `terraform apply`.** The merge applies the
-  infrastructure layer; alunduil applies bootstrap by hand because
-  CI cannot reach its state (README §Layout).
-- **Confirm scope before opening the PR.** It must not overlap
-  sibling or linked issues; ask if uncertain.
+- **Don't run `terraform apply`.** alunduil applies bootstrap by
+  hand because CI cannot reach its state (README §Layout).
+- **Confirm scope doesn't overlap sibling or linked issues** before
+  opening the PR; ask if uncertain.
 - **Defer an issue blocked by unshipped prerequisites.** Propose a
   `blocked-by` edge rather than write premature code.
 - **Revert incidental edits** (formatting, drive-by tweaks) before
@@ -30,8 +29,8 @@ for.
 
 ## Layout
 
-Two Terraform layers, split on credentials and blast radius rather
-than provider — see README §Layout for which holds what.
+Two Terraform layers, split on credentials and blast radius — see
+README §Layout for which holds what.
 
 Product infrastructure stays with its product — README §Scope draws
 the `genshin.dungeon.studio` boundary. Check it before adding a
@@ -44,5 +43,5 @@ product-scoped resource here.
   path annotation in `REUSE.toml` instead.
 - `reuse lint` walks anything git neither tracks nor ignores, so a
   stray untracked file fails it too.
-- Renovate owns pinned versions. Extend `renovate.json` rather than
-  editing a `rev:` by hand.
+- Renovate owns pinned versions; change one by extending
+  `renovate.json`.

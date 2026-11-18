@@ -2,8 +2,9 @@
 <!-- SPDX-License-Identifier: MIT -->
 
 <!--
-Maintainer notes for AGENTS.md, kept here because Claude Code strips
-HTML comments from context and other agents don't:
+Maintainer notes for AGENTS.md. They live here because Claude Code
+strips HTML comments from its context; other agents would load them.
+
 - AI-targeted, loaded every session. Optimise for tokens; keep
   under ~75 lines.
 - Add an entry only when an agent has made the same mistake twice
