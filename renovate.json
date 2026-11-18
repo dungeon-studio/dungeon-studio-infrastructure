@@ -6,11 +6,6 @@
   ],
   "packageRules": [
     {
-      "description": "Merging to develop applies the infrastructure layer, and the plan check passes even when the plan changes resources",
-      "matchManagers": ["terraform"],
-      "automerge": false
-    },
-    {
       "description": "CI cannot plan the bootstrap layer",
       "matchFileNames": ["terraform/bootstrap/**"],
       "automerge": false
@@ -21,7 +16,7 @@
       "groupName": "bootstrap layer"
     },
     {
-      "description": "CI applies the infrastructure layer with this terraform version",
+      "description": "Merging applies the infrastructure layer with this terraform version, and an older v1.x is not guaranteed to read the state it writes, so reverting a bad bump may not recover",
       "matchManagers": ["mise"],
       "matchDepNames": ["terraform"],
       "automerge": false
