@@ -14,6 +14,10 @@ module "renovate_config" {
 
   terraform_created = true
 
+  required_status_checks = {
+    contexts = ["Run pre-commit hooks"]
+  }
+
   org_allowed_action_patterns = local.org_allowed_action_patterns
 }
 
