@@ -19,6 +19,10 @@ module "dungeon_studio_infrastructure" {
       "Run pre-commit hooks",
       "Validate Terraform",
     ]
+    # The apply plans again after merge. A pull request behind develop was
+    # planned without develop's newer commits, so the apply can differ from
+    # the plan it showed.
+    strict = true
   }
   require_code_owner_review = true
   renovate_automerge        = true
