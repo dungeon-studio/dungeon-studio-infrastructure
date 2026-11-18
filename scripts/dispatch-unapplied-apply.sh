@@ -24,8 +24,8 @@ check_preconditions() {
   [[ -n "${GITHUB_OUTPUT:-}" ]] || die "GITHUB_OUTPUT is unset; run inside a GitHub Actions step"
 }
 
-# Counts a run whatever its outcome: a failed apply has already emailed, and
-# re-dispatching it would only fail again.
+# Counts a run whatever its outcome: a failed apply has already opened a
+# report, and re-dispatching it would only fail again.
 newest_run_sha() {
   gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/${workflow}/runs?branch=develop&per_page=1" \
     --jq '.workflow_runs[0].head_sha // empty'

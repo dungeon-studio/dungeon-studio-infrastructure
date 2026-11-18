@@ -33,6 +33,7 @@ jobs:
     permissions:
       contents: read
       id-token: write
+      issues: write
 
     defaults:
       run:
@@ -73,3 +74,9 @@ jobs:
 
       - name: Apply
         run: terraform apply -input=false -no-color tfplan
+
+      - name: Report the failure to the admin
+        if: failure() && github.ref == 'refs/heads/develop'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: '"${GITHUB_WORKSPACE}/scripts/report-apply-failure.sh"'
