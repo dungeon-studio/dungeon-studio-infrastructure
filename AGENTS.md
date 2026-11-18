@@ -39,9 +39,10 @@ product-scoped resource here.
 
 ## Gotchas
 
-- Pre-commit hooks gate every commit; all must pass. New files need
-  SPDX headers — `reuse lint` flags missing ones, and it walks
-  anything git neither tracks nor ignores. Formats without comment
-  syntax get a path annotation in `REUSE.toml` instead.
+- Pre-commit hooks gate every commit; all must pass.
+- New files need SPDX headers. Formats without comment syntax get a
+  path annotation in `REUSE.toml` instead.
+- `reuse lint` walks anything git neither tracks nor ignores, so a
+  stray untracked file fails it too.
 - Renovate owns pinned versions. Extend `renovate.json` rather than
   editing a `rev:` by hand.
