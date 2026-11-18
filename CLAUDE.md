@@ -13,6 +13,6 @@ HTML comments from context and other agents don't:
 - Human-facing context lives in [README](README.md).
 -->
 
-# dungeon-studio-infrastructure — Claude Code guide
+# dungeon-studio-infrastructure — Claude Code entry point
 
 @AGENTS.md
