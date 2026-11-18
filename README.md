@@ -76,6 +76,12 @@ continuous integration cannot read or rewrite the state that defines its own
 credentials. `genshin.dungeon.studio` keeps a separate bucket in its own
 project on the same reasoning.
 
+Plan a bootstrap provider update before merging it, because continuous
+integration cannot. Renovate groups those updates into one
+`renovate/bootstrap-layer` pull request and leaves it for review. Check out
+its branch and run `just bootstrap`, which shows the plan before asking to
+apply; answer no to stop at the plan.
+
 Declare a repository as a call to `terraform/modules/github_repository/`,
 which holds the org's defaults: Git flow, its rulesets, and read-only
 workflow tokens. The call names only what differs.
