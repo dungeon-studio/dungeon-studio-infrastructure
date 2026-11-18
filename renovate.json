@@ -16,7 +16,7 @@
       "groupName": "bootstrap layer"
     },
     {
-      "description": "Merging applies the infrastructure layer with this terraform version, and an older v1.x is not guaranteed to read the state it writes, so reverting a bad bump may not recover",
+      "description": "A newer terraform can write state an older one cannot read, so reverting a bump after it applies may not recover",
       "matchManagers": ["mise"],
       "matchDepNames": ["terraform"],
       "automerge": false
