@@ -11,6 +11,7 @@ set -euo pipefail
 
 readonly title="Terraform infrastructure apply failed on develop"
 readonly admin=alunduil
+readonly reporter='github-actions[bot]'
 
 die() {
   echo "error: $*" >&2
@@ -25,9 +26,24 @@ check_preconditions() {
   done
 }
 
-open_report() {
-  gh api "repos/${GITHUB_REPOSITORY}/issues?state=open&creator=github-actions%5Bbot%5D&per_page=100" \
+find_open_report() {
+  gh api -X GET "repos/${GITHUB_REPOSITORY}/issues" \
+    -f state=open -f creator="${reporter}" -f per_page=100 \
     --jq "[.[] | select(.title == \"${title}\")][0].number // empty"
+}
+
+comment_on_report() {
+  local number="$1" body="$2"
+  gh api "repos/${GITHUB_REPOSITORY}/issues/${number}/comments" -f body="${body}" >/dev/null
+  echo "Commented on #${number}"
+}
+
+file_report() {
+  local body="$1" number
+  number="$(gh api "repos/${GITHUB_REPOSITORY}/issues" \
+    -f title="${title}" -f body="${body}" -f "assignees[]=${admin}" -f "labels[]=bug" \
+    --jq .number)"
+  echo "Opened #${number}"
 }
 
 main() {
@@ -36,16 +52,12 @@ main() {
   local run_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
   local body="Apply run ${run_url} failed (triggered by \`${GITHUB_ACTOR}\`)."
   local number
-  number="$(open_report)"
+  number="$(find_open_report)"
 
   if [[ -n "${number}" ]]; then
-    gh api "repos/${GITHUB_REPOSITORY}/issues/${number}/comments" -f body="${body}" >/dev/null
-    echo "Commented on #${number}"
+    comment_on_report "${number}" "${body}"
   else
-    number="$(gh api "repos/${GITHUB_REPOSITORY}/issues" \
-      -f title="${title}" -f body="${body}" -f "assignees[]=${admin}" -f "labels[]=bug" \
-      --jq .number)"
-    echo "Opened #${number}"
+    file_report "${body}"
   fi
 }
 
