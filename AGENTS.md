@@ -1,18 +1,11 @@
 <!-- SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com> -->
 <!-- SPDX-License-Identifier: MIT -->
 
-<!--
-Maintainer notes (HTML comments are stripped from Claude's context):
-- AI-targeted, loaded every session. Optimise for tokens; keep
-  under ~75 lines.
-- Add an entry only when Claude has made the same mistake twice
-  or a non-obvious convention bit a session.
-- Prefer pointers (README §..., file:line) over copies of content
-  that already lives elsewhere.
-- Human-facing context lives in [README](README.md).
--->
+# dungeon-studio-infrastructure — agent guide
 
-# dungeon-studio-infrastructure — Claude guide
+Canonical rules for every coding agent. A tool that reads only its
+own path gets a file there importing this one, holding only what is
+false for every other agent — `CLAUDE.md` is that case.
 
 ## Contribution flow
 
