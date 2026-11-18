@@ -1,10 +1,9 @@
 # SPDX-FileCopyrightText: 2026 Alex Brandt <alunduil@gmail.com>
 # SPDX-License-Identifier: MIT
 
-# Refresh sets the repository's default_branch to the live value. A scoped
-# data source would defer its read to apply on every plan, so a plan with
-# nothing to change would still exit 2 under -detailed-exitcode. The attribute
-# is deprecated only as an input, and this module never sets it.
+# default_branch holds the live value after refresh. A data source scoped to
+# this check would defer its read to apply, so every plan would report a
+# change. The attribute is deprecated only as an input.
 check "default_branch_rename" {
   assert {
     condition = github_repository.this.default_branch == local.develop_branch
