@@ -19,6 +19,9 @@ module "dungeon_studio_infrastructure" {
       "Run pre-commit hooks",
       "Validate Terraform",
     ]
+    # The apply re-plans at merge, so a plan from an older develop leaves
+    # whatever develop changed since unreviewed.
+    strict = true
   }
   require_code_owner_review = true
   renovate_automerge        = true
