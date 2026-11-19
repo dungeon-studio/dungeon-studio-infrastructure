@@ -228,16 +228,6 @@ resource "github_repository_ruleset" "review" {
   }
 }
 
-data "github_app" "actions" {
-  slug = "github-actions"
-}
-
-data "github_app" "check_sources" {
-  for_each = toset(values(try(var.required_status_checks.app_contexts, {})))
-
-  slug = each.value
-}
-
 locals {
   # Each Git flow repository runs a job by this name, because rulesets on
   # GitHub Free cannot restrict a pull request's source branch. It fails a
@@ -246,18 +236,17 @@ locals {
 
   ci_results_check = "Check CI results"
 
-  # Maps each required context to the app that must report it.
+  actions_app = "github-actions"
+
+  # Maps each required context to the slug of the app that must report it.
   required_checks = var.required_status_checks == null ? {} : merge(
     {
       for context in concat(
         var.required_status_checks.ci_results_check ? [local.ci_results_check] : [],
         var.required_status_checks.contexts,
-      ) : context => data.github_app.actions.id
+      ) : context => local.actions_app
     },
-    {
-      for context, app in var.required_status_checks.app_contexts :
-      context => data.github_app.check_sources[app].id
-    },
+    var.required_status_checks.app_contexts,
   )
 
   # Requiring up-to-date branches makes Renovate rebase whenever the target
@@ -267,17 +256,23 @@ locals {
   checks_refs = {
     for name, policy in {
       develop = {
-        refs     = local.develop_refs
-        contexts = local.required_checks
-        strict   = coalesce(try(var.required_status_checks.strict, null), !var.renovate_automerge)
+        refs   = local.develop_refs
+        checks = local.required_checks
+        strict = coalesce(try(var.required_status_checks.strict, null), !var.renovate_automerge)
       }
       release = {
-        refs     = local.flow.release_refs
-        contexts = merge({ (local.git_flow_source_check) = data.github_app.actions.id }, local.required_checks)
-        strict   = true
+        refs   = local.flow.release_refs
+        checks = merge({ (local.git_flow_source_check) = local.actions_app }, local.required_checks)
+        strict = true
       }
-    } : name => policy if length(policy.refs) > 0 && length(policy.contexts) > 0
+    } : name => policy if length(policy.refs) > 0 && length(policy.checks) > 0
   }
+}
+
+data "github_app" "check_sources" {
+  for_each = toset(flatten([for policy in local.checks_refs : values(policy.checks)]))
+
+  slug = each.value
 }
 
 # No bypass actors: a merge that bypasses any ruleset skips every rule its
@@ -306,12 +301,12 @@ resource "github_repository_ruleset" "checks" {
       strict_required_status_checks_policy = each.value.strict
 
       dynamic "required_check" {
-        for_each = each.value.contexts
+        for_each = each.value.checks
         content {
           context = required_check.key
           # Stops another app from satisfying the check by reporting under
           # the same name.
-          integration_id = required_check.value
+          integration_id = data.github_app.check_sources[required_check.value].id
         }
       }
     }
