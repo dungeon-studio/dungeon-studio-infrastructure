@@ -232,6 +232,12 @@ data "github_app" "actions" {
   slug = "github-actions"
 }
 
+data "github_app" "check_sources" {
+  for_each = toset(values(try(var.required_status_checks.app_contexts, {})))
+
+  slug = each.value
+}
+
 locals {
   # Each Git flow repository runs a job by this name, because rulesets on
   # GitHub Free cannot restrict a pull request's source branch. It fails a
@@ -240,9 +246,18 @@ locals {
 
   ci_results_check = "Check CI results"
 
-  required_checks = var.required_status_checks == null ? [] : concat(
-    var.required_status_checks.ci_results_check ? [local.ci_results_check] : [],
-    var.required_status_checks.contexts,
+  # Maps each required context to the app that must report it.
+  required_checks = var.required_status_checks == null ? {} : merge(
+    {
+      for context in concat(
+        var.required_status_checks.ci_results_check ? [local.ci_results_check] : [],
+        var.required_status_checks.contexts,
+      ) : context => data.github_app.actions.id
+    },
+    {
+      for context, app in var.required_status_checks.app_contexts :
+      context => data.github_app.check_sources[app].id
+    },
   )
 
   # Requiring up-to-date branches makes Renovate rebase whenever the target
@@ -258,7 +273,7 @@ locals {
       }
       release = {
         refs     = local.flow.release_refs
-        contexts = concat([local.git_flow_source_check], local.required_checks)
+        contexts = merge({ (local.git_flow_source_check) = data.github_app.actions.id }, local.required_checks)
         strict   = true
       }
     } : name => policy if length(policy.refs) > 0 && length(policy.contexts) > 0
@@ -293,10 +308,10 @@ resource "github_repository_ruleset" "checks" {
       dynamic "required_check" {
         for_each = each.value.contexts
         content {
-          context = required_check.value
+          context = required_check.key
           # Stops another app from satisfying the check by reporting under
           # the same name.
-          integration_id = data.github_app.actions.id
+          integration_id = required_check.value
         }
       }
     }

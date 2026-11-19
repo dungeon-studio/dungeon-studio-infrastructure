@@ -46,6 +46,7 @@ variable "required_status_checks" {
   type = object({
     ci_results_check = optional(bool, false)
     contexts         = optional(list(string), [])
+    app_contexts     = optional(map(string), {})
     strict           = optional(bool)
   })
   default     = null
@@ -58,6 +59,9 @@ variable "required_status_checks" {
     so leave out jobs that skip some pull requests. A check must fail
     only on what the pull request changes, so leave out dependency scans:
     they fail on newly disclosed advisories.
+
+    app_contexts maps checks another GitHub App reports to that app's
+    slug, under the same rules as contexts.
 
     strict requires a pull request into develop to be up to date; main
     and release/** always require it. It defaults to false under
