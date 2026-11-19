@@ -60,8 +60,9 @@ variable "required_status_checks" {
     only on what the pull request changes, so leave out dependency scans:
     they fail on newly disclosed advisories.
 
-    app_contexts maps checks another GitHub App reports to that app's
-    slug, under the same rules as contexts.
+    app_contexts requires checks that other GitHub Apps report. Each key
+    is a check name and each value is the slug of the app that reports
+    it. The rules for contexts apply.
 
     strict requires a pull request into develop to be up to date; main
     and release/** always require it. It defaults to false under

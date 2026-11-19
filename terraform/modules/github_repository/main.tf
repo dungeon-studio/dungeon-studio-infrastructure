@@ -238,7 +238,6 @@ locals {
 
   actions_app = "github-actions"
 
-  # Maps each required context to the slug of the app that must report it.
   required_checks = var.required_status_checks == null ? {} : merge(
     {
       for context in concat(
