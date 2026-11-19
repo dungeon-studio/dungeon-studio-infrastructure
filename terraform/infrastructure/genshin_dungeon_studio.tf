@@ -26,6 +26,11 @@ module "genshin_dungeon_studio" {
       "Test against Firestore",
       "Verify toolchain",
     ]
+    # Codecov reports patch coverage on every pull request, including ones
+    # that change no covered code.
+    app_contexts = {
+      "codecov/patch" = "codecov"
+    }
   }
   require_code_owner_review = true
   renovate_automerge        = true
