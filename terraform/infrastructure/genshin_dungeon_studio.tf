@@ -31,6 +31,21 @@ module "genshin_dungeon_studio" {
     app_contexts = {
       "codecov/patch" = "codecov"
     }
+    # Two pull requests that each pass alone can still break develop
+    # together, as in genshin.dungeon.studio#1302.
+    merge_queue = true
+  }
+  # Outside admin-only, anyone with contents write can merge to develop
+  # through the queue once the checks pass:
+  # - the admin;
+  # - the renovate, dungeon-studio-terraform, and dungeon-studio-hook-fix
+  #   Apps (docs/explanation/github-app-access.md);
+  # - release-notes.yml's draft job, the only workflow token with
+  #   contents write, which runs on develop's own pushes.
+  # The claude App's installation leaves this repository out until #261
+  # shows an outside comment can't make it merge.
+  admin_only_updates = {
+    develop = false
   }
   require_code_owner_review = true
   renovate_automerge        = true
