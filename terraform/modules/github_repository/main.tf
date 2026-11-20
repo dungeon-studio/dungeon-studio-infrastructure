@@ -26,6 +26,11 @@ locals {
 
   protected_refs = concat(local.develop_refs, local.flow.release_refs)
 
+  admin_only_refs = concat(
+    var.admin_only_updates.develop ? local.develop_refs : [],
+    var.admin_only_updates.release ? local.flow.release_refs : [],
+  )
+
   # Null squash commit settings plan the defaults GitHub keeps when squash
   # merges are off, because the provider sends them only when they're on.
   squash_merges = contains(local.flow.merge_methods, "squash")
@@ -162,7 +167,7 @@ resource "github_repository_ruleset" "default" {
 # Merging a pull request updates the branch too, so only bypass actors can
 # merge.
 resource "github_repository_ruleset" "admin_only" {
-  count = var.admin_only_updates ? 1 : 0
+  count = length(local.admin_only_refs) > 0 ? 1 : 0
 
   name        = "admin-only"
   repository  = github_repository.this.name
@@ -173,7 +178,7 @@ resource "github_repository_ruleset" "admin_only" {
 
   conditions {
     ref_name {
-      include = local.protected_refs
+      include = local.admin_only_refs
       exclude = []
     }
   }
@@ -258,11 +263,14 @@ locals {
         refs   = local.develop_refs
         checks = local.required_checks
         strict = coalesce(try(var.required_status_checks.strict, null), !var.renovate_automerge)
+        queue  = try(var.required_status_checks.merge_queue, false)
       }
+      # Release pull requests merge one at a time, so they need no queue.
       release = {
         refs   = local.flow.release_refs
         checks = merge({ (local.git_flow_source_check) = local.actions_app }, local.required_checks)
         strict = true
+        queue  = false
       }
     } : name => policy if length(policy.refs) > 0 && length(policy.checks) > 0
   }
@@ -307,6 +315,13 @@ resource "github_repository_ruleset" "checks" {
           # the same name.
           integration_id = data.github_app.check_sources[required_check.value].id
         }
+      }
+    }
+
+    dynamic "merge_queue" {
+      for_each = each.value.queue ? [1] : []
+      content {
+        merge_method = upper(local.flow.merge_methods[0])
       }
     }
   }

@@ -48,6 +48,7 @@ variable "required_status_checks" {
     contexts         = optional(list(string), [])
     app_contexts     = optional(map(string), {})
     strict           = optional(bool)
+    merge_queue      = optional(bool, false)
   })
   default     = null
   description = <<-EOT
@@ -68,11 +69,21 @@ variable "required_status_checks" {
     and release/** always require it. It defaults to false under
     renovate_automerge, true otherwise.
 
+    merge_queue tests each pull request into develop against develop's
+    latest head without strict's rebases. Every check must also report
+    on merge_group. The queue merges as a bot no ruleset can name as a
+    bypass actor, so it needs admin_only_updates.develop off.
+
     ci_results_check requires the aggregator job "Check CI results"
     instead of matrix legs, whose names change with the versions they
     test. The job must list every job it stands in for under needs: and
     run on pushes to develop.
   EOT
+
+  validation {
+    condition     = !try(var.required_status_checks.merge_queue, false) || !var.admin_only_updates.develop
+    error_message = "merge_queue needs admin_only_updates.develop = false; admin-only would refuse every merge the queue makes."
+  }
 }
 
 variable "require_code_owner_review" {
@@ -86,12 +97,17 @@ variable "require_code_owner_review" {
 }
 
 variable "admin_only_updates" {
-  type        = bool
-  default     = true
+  type = object({
+    develop = optional(bool, true)
+    release = optional(bool, true)
+  })
+  default     = {}
+  nullable    = false
   description = <<-EOT
     Only the repository admin, and Renovate under renovate_automerge, can
-    push or merge to develop, main, or release/**. Set false once others
-    merge pull requests.
+    push or merge to the branches this turns on. develop covers develop;
+    release covers main and release/**. Turn a branch off once others
+    merge pull requests to it, or to merge it through a queue.
   EOT
 }
 
