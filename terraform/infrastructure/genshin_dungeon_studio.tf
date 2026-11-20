@@ -60,9 +60,8 @@ module "genshin_dungeon_studio" {
   }
 
   legacy = {
-    squash_only                      = true
-    can_approve_pull_request_reviews = true
-    dependabot_security_updates      = true
+    squash_only                 = true
+    dependabot_security_updates = true
   }
 }
 
