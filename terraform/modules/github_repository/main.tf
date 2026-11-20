@@ -24,7 +24,7 @@ locals {
     release_refs   = ["refs/heads/${local.main_branch}", "refs/heads/release/**"]
   }
 
-  # Per-branch inputs such as admin_only_updates are keyed by these groups.
+  # admin_only_updates takes one setting per group.
   protected_ref_groups = {
     develop = local.develop_refs
     release = local.flow.release_refs

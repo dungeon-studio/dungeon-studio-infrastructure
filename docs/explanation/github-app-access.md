@@ -34,14 +34,15 @@ access.
 ### claude: every repository but genshin.dungeon.studio
 
 Claude sessions push branches and open pull requests through this App.
-The App also acts on `@claude` mentions in comments, and it isn't yet
-known whether it checks the commenter's access (#261). genshin.dungeon.studio
-merges to `develop` outside `admin-only`, so the App could merge there
-any pull request whose checks pass, and it stays out of the selection
-until #261 settles that.
+The App also acts on `@claude` mentions in comments. Whether it checks
+the commenter's access is unverified (#261).
 
-The selection lists every other repository, so add each new repository by
-hand. Archived repositories are read-only whatever the installation says.
+genshin.dungeon.studio is left out because its `develop` sits outside
+`admin-only`. There, the App could merge any pull request whose checks
+pass.
+
+The selection lists every other repository, so add each new repository
+to it by hand. Archived repositories are read-only whatever the installation says.
 
 ### dungeon-studio-terraform: all repositories
 

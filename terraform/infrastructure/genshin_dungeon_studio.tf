@@ -41,9 +41,9 @@ module "genshin_dungeon_studio" {
   # - the renovate, dungeon-studio-terraform, and dungeon-studio-hook-fix
   #   Apps (docs/explanation/github-app-access.md);
   # - release-notes.yml's draft job, the only workflow token with
-  #   contents write, which runs on develop's own pushes.
-  # The claude App's installation leaves this repository out until #261
-  # shows an outside comment can't make it merge.
+  #   contents write. It runs only on pushes to develop.
+  # The claude App's installation leaves this repository out, because an
+  # outside @claude mention might make it merge (#261).
   admin_only_updates = {
     develop = false
   }

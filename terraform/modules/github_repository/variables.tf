@@ -71,8 +71,8 @@ variable "required_status_checks" {
 
     merge_queue tests each pull request into develop against develop's
     latest head without strict's rebases. Every check must also report
-    on merge_group. The queue merges as a bot no ruleset can name as a
-    bypass actor, so it needs admin_only_updates.develop off.
+    on merge_group. No ruleset can name the queue's bot as a bypass
+    actor, so the queue needs admin_only_updates.develop off.
 
     ci_results_check requires the aggregator job "Check CI results"
     instead of matrix legs, whose names change with the versions they
@@ -105,9 +105,9 @@ variable "admin_only_updates" {
   nullable    = false
   description = <<-EOT
     Only the repository admin, and Renovate under renovate_automerge, can
-    push or merge to the branches this turns on. develop covers develop;
-    release covers main and release/**. Turn a branch off once others
-    merge pull requests to it, or to merge it through a queue.
+    push or merge to a branch group set true: develop, or release (main
+    and release/**). Set a group false once others merge pull requests
+    to it, or to merge it through a queue.
   EOT
 }
 
