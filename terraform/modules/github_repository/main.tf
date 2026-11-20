@@ -24,12 +24,17 @@ locals {
     release_refs   = ["refs/heads/${local.main_branch}", "refs/heads/release/**"]
   }
 
-  protected_refs = concat(local.develop_refs, local.flow.release_refs)
+  # Per-branch inputs such as admin_only_updates are keyed by these groups.
+  protected_ref_groups = {
+    develop = local.develop_refs
+    release = local.flow.release_refs
+  }
 
-  admin_only_refs = concat(
-    var.admin_only_updates.develop ? local.develop_refs : [],
-    var.admin_only_updates.release ? local.flow.release_refs : [],
-  )
+  protected_refs = flatten(values(local.protected_ref_groups))
+
+  admin_only_refs = flatten([
+    for group, refs in local.protected_ref_groups : refs if var.admin_only_updates[group]
+  ])
 
   # Null squash commit settings plan the defaults GitHub keeps when squash
   # merges are off, because the provider sends them only when they're on.
@@ -260,17 +265,17 @@ locals {
   checks_refs = {
     for name, policy in {
       develop = {
-        refs   = local.develop_refs
-        checks = local.required_checks
-        strict = coalesce(try(var.required_status_checks.strict, null), !var.renovate_automerge)
-        queue  = try(var.required_status_checks.merge_queue, false)
+        refs        = local.develop_refs
+        checks      = local.required_checks
+        strict      = coalesce(try(var.required_status_checks.strict, null), !var.renovate_automerge)
+        merge_queue = try(var.required_status_checks.merge_queue, false)
       }
       # Release pull requests merge one at a time, so they need no queue.
       release = {
-        refs   = local.flow.release_refs
-        checks = merge({ (local.git_flow_source_check) = local.actions_app }, local.required_checks)
-        strict = true
-        queue  = false
+        refs        = local.flow.release_refs
+        checks      = merge({ (local.git_flow_source_check) = local.actions_app }, local.required_checks)
+        strict      = true
+        merge_queue = false
       }
     } : name => policy if length(policy.refs) > 0 && length(policy.checks) > 0
   }
@@ -319,7 +324,7 @@ resource "github_repository_ruleset" "checks" {
     }
 
     dynamic "merge_queue" {
-      for_each = each.value.queue ? [1] : []
+      for_each = each.value.merge_queue ? [1] : []
       content {
         merge_method = upper(local.flow.merge_methods[0])
       }
