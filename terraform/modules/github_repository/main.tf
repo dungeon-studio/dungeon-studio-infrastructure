@@ -24,7 +24,17 @@ locals {
     release_refs   = ["refs/heads/${local.main_branch}", "refs/heads/release/**"]
   }
 
-  protected_refs = concat(local.develop_refs, local.flow.release_refs)
+  # admin_only_updates takes one setting per group.
+  protected_ref_groups = {
+    develop = local.develop_refs
+    release = local.flow.release_refs
+  }
+
+  protected_refs = flatten(values(local.protected_ref_groups))
+
+  admin_only_refs = flatten([
+    for group, refs in local.protected_ref_groups : refs if var.admin_only_updates[group]
+  ])
 
   # Null squash commit settings plan the defaults GitHub keeps when squash
   # merges are off, because the provider sends them only when they're on.
@@ -162,7 +172,7 @@ resource "github_repository_ruleset" "default" {
 # Merging a pull request updates the branch too, so only bypass actors can
 # merge.
 resource "github_repository_ruleset" "admin_only" {
-  count = var.admin_only_updates ? 1 : 0
+  count = length(local.admin_only_refs) > 0 ? 1 : 0
 
   name        = "admin-only"
   repository  = github_repository.this.name
@@ -173,7 +183,7 @@ resource "github_repository_ruleset" "admin_only" {
 
   conditions {
     ref_name {
-      include = local.protected_refs
+      include = local.admin_only_refs
       exclude = []
     }
   }
@@ -255,14 +265,17 @@ locals {
   checks_refs = {
     for name, policy in {
       develop = {
-        refs   = local.develop_refs
-        checks = local.required_checks
-        strict = coalesce(try(var.required_status_checks.strict, null), !var.renovate_automerge)
+        refs        = local.develop_refs
+        checks      = local.required_checks
+        strict      = coalesce(try(var.required_status_checks.strict, null), !var.renovate_automerge)
+        merge_queue = try(var.required_status_checks.merge_queue, false)
       }
+      # Release pull requests merge one at a time, so they need no queue.
       release = {
-        refs   = local.flow.release_refs
-        checks = merge({ (local.git_flow_source_check) = local.actions_app }, local.required_checks)
-        strict = true
+        refs        = local.flow.release_refs
+        checks      = merge({ (local.git_flow_source_check) = local.actions_app }, local.required_checks)
+        strict      = true
+        merge_queue = false
       }
     } : name => policy if length(policy.refs) > 0 && length(policy.checks) > 0
   }
@@ -307,6 +320,13 @@ resource "github_repository_ruleset" "checks" {
           # the same name.
           integration_id = data.github_app.check_sources[required_check.value].id
         }
+      }
+    }
+
+    dynamic "merge_queue" {
+      for_each = each.value.merge_queue ? [1] : []
+      content {
+        merge_method = upper(local.flow.merge_methods[0])
       }
     }
   }
