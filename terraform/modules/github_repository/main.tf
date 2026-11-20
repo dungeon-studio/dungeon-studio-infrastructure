@@ -386,7 +386,7 @@ resource "github_repository_dependabot_security_updates" "this" {
 resource "github_workflow_repository_permissions" "this" {
   repository                       = github_repository.this.name
   default_workflow_permissions     = "read"
-  can_approve_pull_request_reviews = var.legacy.can_approve_pull_request_reviews
+  can_approve_pull_request_reviews = false
 }
 
 # Declared because destroying it resets the repository to allow every action,
