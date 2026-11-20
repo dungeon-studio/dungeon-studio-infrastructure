@@ -3,65 +3,58 @@
 
 # GitHub App repository access
 
-This page explains which repositories each GitHub App on the
-`dungeon-studio` org can write to, and why. It covers the Apps granted
-**Repository → Contents** write, because that permission lets an App push
-commits and, where a ruleset allows it, merge. Apps that only read contents
-are out of scope. For registering an App, see the how-tos it links to.
+Each GitHub App on the `dungeon-studio` org with **Repository → Contents**
+write can push commits to the repositories it is installed on. Where a
+ruleset allows it, it can also merge. Apps that only read contents are out
+of scope.
 
 ## Why the selections live outside Terraform
 
-Each installation's repository selection is set in the org's settings by
-hand. The `github` provider has a resource for it,
-`github_app_installation_repositories`, but it rejects GitHub App
-authentication. The endpoints behind it act for a user with admin on the
-repository, and the infrastructure layer authenticates as an App so that
-it never applies as whoever ran it. Adding a user-authenticated provider to
-manage one setting would reintroduce the personal credential the layer was
-built to avoid.
+Repository selections are set by hand in the org's settings. The `github`
+provider's `github_app_installation_repositories` resource rejects GitHub
+App authentication, because the endpoints behind it act for a user. The
+infrastructure layer authenticates as an App so that an apply never runs
+with a person's credentials. A second, user-authenticated provider for this
+one setting would undo that.
 
 GitHub also refuses to remove a repository from an installation that covers
-all repositories. Moving an installation from all repositories to a
-selection is an owner's action in the UI either way.
+all repositories. Narrowing an installation is an owner's action in the UI
+regardless of Terraform.
 
 ## Each App's reach
 
 ### Renovate: all repositories
 
-Renovate opens dependency updates in every repository, so it needs to push
+Renovate opens dependency updates in every repository, so it pushes
 branches everywhere. On repositories that set `renovate_automerge`, the
-`admin-only` ruleset lets it merge as well. Narrowing it would mean
-re-adding each new repository by hand for no reduction in what it can do to
-the repositories it already serves.
+`admin-only` ruleset also lets it merge. A selection would still list every
+repository, so it would add a manual step per new repository and remove no
+access.
 
 ### claude: all repositories
 
-Claude sessions push branches and open pull requests through this App. The
-org has three active repositories, and Claude is expected to work in each of
-them, so a selection would list all three. Archived repositories are read-only whatever
-the installation says.
+Claude sessions push branches and open pull requests through this App.
+Claude works in every active repository, so a selection would list them
+all. Archived repositories are read-only whatever the installation says.
 
-The cost of all repositories is that a new repository receives Claude's
-write access without anyone choosing it. That is the intended behaviour:
-a new repository is one Claude is expected to work in. Revisit this if the
-org gains a repository Claude should not touch.
+The trade-off is that a new repository gets Claude's write access without
+anyone choosing it. Narrow the installation if the org gains a repository
+Claude should not touch.
 
 ### dungeon-studio-terraform: all repositories
 
 Terraform manages every active repository in the org. It needs contents
-write to create a Git flow repository's `main` branch, and a repository left
-out of the installation leaves resources Terraform cannot refresh.
-[Create the GitHub App](../how-to/create-github-app.md) records the
+write to create a Git flow repository's `main` branch. A repository outside
+the installation leaves resources Terraform cannot refresh.
+[Create the GitHub App](../how-to/create-github-app.md) lists the full
 permission set.
 
 ### dungeon-studio-hook-fix: selected repositories
 
-This App exists for one job: pushing pre-commit hook fixes to Renovate
-branches so the required checks re-run. Only repositories that set
-`renovate_automerge` run that job, so it is installed on those alone. The
-`renovate` ruleset lets it push to Renovate branches past review, which
-Renovate then merges, so its reach stays as narrow as that job. Its
-credentials are Actions secrets on the same repositories, and a repository
-holding them without the installation cannot push.
+This App pushes pre-commit hook fixes to Renovate branches so the required
+checks re-run. The `renovate` ruleset lets it push there without review,
+and Renovate then merges the result. That trust belongs only where Renovate
+automerges, so the App is installed only on repositories that set
+`renovate_automerge`.
 [Create the hook-fix GitHub App](../how-to/create-hook-fix-github-app.md)
-keeps the selection and the secrets in step.
+keeps the selection and the App's Actions secrets in step.
