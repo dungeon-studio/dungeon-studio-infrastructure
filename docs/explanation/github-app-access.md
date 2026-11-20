@@ -31,15 +31,17 @@ branches everywhere. On repositories that set `renovate_automerge`, the
 repository, so it would add a manual step per new repository and remove no
 access.
 
-### claude: all repositories
+### claude: every repository but genshin.dungeon.studio
 
 Claude sessions push branches and open pull requests through this App.
-Claude works in every active repository, so a selection would list them
-all. Archived repositories are read-only whatever the installation says.
+The App also acts on `@claude` mentions in comments, and it isn't yet
+known whether it checks the commenter's access (#261). genshin.dungeon.studio
+merges to `develop` outside `admin-only`, so the App could merge there
+any pull request whose checks pass, and it stays out of the selection
+until #261 settles that.
 
-The trade-off is that a new repository gets Claude's write access without
-anyone choosing it. Narrow the installation if the org gains a repository
-Claude should not touch.
+The selection lists every other repository, so add each new repository by
+hand. Archived repositories are read-only whatever the installation says.
 
 ### dungeon-studio-terraform: all repositories
 
