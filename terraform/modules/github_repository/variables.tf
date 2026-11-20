@@ -140,10 +140,9 @@ variable "environments" {
 
 variable "legacy" {
   type = object({
-    squash_only                      = optional(bool, false)
-    allowed_action_patterns          = optional(list(string))
-    can_approve_pull_request_reviews = optional(bool, false)
-    dependabot_security_updates      = optional(bool, false)
+    squash_only                 = optional(bool, false)
+    allowed_action_patterns     = optional(list(string))
+    dependabot_security_updates = optional(bool, false)
   })
   default     = {}
   nullable    = false
@@ -157,9 +156,6 @@ variable "legacy" {
     allowed_action_patterns: owner/repo@* patterns for a repository
     allowlist inside the org's, in place of org_allowed_action_patterns.
     GitHub-owned and verified-creator actions stay allowed.
-
-    can_approve_pull_request_reviews: workflows' GITHUB_TOKEN may create
-    and approve pull requests.
 
     dependabot_security_updates: Dependabot opens security fix pull
     requests.

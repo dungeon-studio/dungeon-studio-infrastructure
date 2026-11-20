@@ -47,8 +47,8 @@ The registered App's ID is `5422895`.
 ## Install the App on the automerged repositories
 
 From the App's **Install App** tab, install it on `dungeon-studio` with
-**Only select repositories**, and select each repository Renovate automerges:
-`genshin.dungeon.studio` today.
+**Only select repositories**, and select each repository whose module call
+sets `renovate_automerge = true`.
 
 Keep that selection in step with `REPOS` in
 `scripts/configure-hook-fix-secrets.sh`. A repository holding the secrets but
