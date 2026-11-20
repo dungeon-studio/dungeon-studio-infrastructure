@@ -167,6 +167,10 @@ resources, so the key stays out of state.
 [Create the hook-fix GitHub App](docs/how-to/create-hook-fix-github-app.md)
 registers it, sets the secrets, and rotates the key.
 
+[GitHub App repository access](docs/explanation/github-app-access.md)
+explains which repositories each App with contents write reaches, and why
+those selections are set by hand.
+
 ## Connect a product to Grafana Cloud
 
 Bootstrap creates the credentials products use to reach the `dungeonstudio`
