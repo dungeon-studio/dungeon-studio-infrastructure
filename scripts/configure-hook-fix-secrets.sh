@@ -14,6 +14,7 @@ HOOK_FIX_APP_ID="${HOOK_FIX_APP_ID:-5422895}"
 # Match the App's installation. A repository listed here without it gets
 # credentials that cannot push.
 REPOS=(
+  dungeon-studio/dungeon-studio-infrastructure
   dungeon-studio/genshin.dungeon.studio
 )
 
