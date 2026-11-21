@@ -14,6 +14,7 @@ module "renovate_config" {
 
   terraform_created = true
 
+  # No test job: the presets are data, and the pre-commit hooks validate them.
   required_status_checks = {
     contexts = ["Run pre-commit hooks"]
   }
