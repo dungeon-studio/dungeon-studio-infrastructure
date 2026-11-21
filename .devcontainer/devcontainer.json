@@ -11,6 +11,7 @@
   ],
   "containerEnv": {
     "MISE_TRUSTED_CONFIG_PATHS": "${containerWorkspaceFolder}",
+    // Keeps .claude.json inside the volume, so it survives a rebuild.
     "CLAUDE_CONFIG_DIR": "/home/vscode/.claude"
   },
   "remoteUser": "vscode",

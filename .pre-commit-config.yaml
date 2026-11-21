@@ -24,7 +24,7 @@ repos:
       - id: check-yaml
         args: [--unsafe] # Allow custom YAML tags
       - id: check-json
-        exclude: '\.jsonc$'
+        exclude: '(\.jsonc|devcontainer\.json)$'
       - id: check-toml
 
       # Prevent issues
