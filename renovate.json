@@ -6,7 +6,7 @@
   ],
   "packageRules": [
     {
-      "description": "Required checks and the plan gate validate every update, so automerge majors and 0.x bumps the shared preset withholds; the rules below still exempt what CI cannot validate",
+      "description": "Required checks and the plan gate vet every update. Rules after this one win, so list opt-outs below it",
       "matchUpdateTypes": ["major", "minor", "patch"],
       "automerge": true
     },
