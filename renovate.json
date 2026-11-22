@@ -6,6 +6,11 @@
   ],
   "packageRules": [
     {
+      "description": "Required checks and the plan gate validate every update, so automerge majors and 0.x bumps the shared preset withholds; the rules below still exempt what CI cannot validate",
+      "matchUpdateTypes": ["major", "minor", "patch"],
+      "automerge": true
+    },
+    {
       "description": "CI cannot plan the bootstrap layer",
       "matchFileNames": ["terraform/bootstrap/**"],
       "automerge": false
