@@ -6,6 +6,11 @@
   ],
   "packageRules": [
     {
+      "description": "Required checks and the plan gate vet every update. Rules after this one win, so list opt-outs below it",
+      "matchUpdateTypes": ["major", "minor", "patch"],
+      "automerge": true
+    },
+    {
       "description": "CI cannot plan the bootstrap layer",
       "matchFileNames": ["terraform/bootstrap/**"],
       "automerge": false
