@@ -70,9 +70,10 @@ variable "required_status_checks" {
     renovate_automerge, true otherwise.
 
     merge_queue tests each pull request into develop against develop's
-    latest head without strict's rebases. Every check must also report
-    on merge_group. No ruleset can name the queue's bot as a bypass
-    actor, so the queue needs admin_only_updates.develop off.
+    latest head without strict's rebases. It also allows GitHub
+    auto-merge to add pull requests to the queue. Every check must also
+    report on merge_group. No ruleset can name the queue's bot as a
+    bypass actor, so the queue needs admin_only_updates.develop off.
 
     ci_results_check requires the aggregator job "Check CI results"
     instead of matrix legs, whose names change with the versions they
@@ -116,8 +117,8 @@ variable "renovate_automerge" {
   default     = false
   description = <<-EOT
     Renovate merges its own pull requests without review once the required
-    status checks pass; GitHub auto-merge ignores checks that aren't
-    required. Only Renovate and the hook-fix App can push to renovate/**.
+    status checks pass. Only Renovate and the hook-fix App can push to
+    renovate/**.
   EOT
 
   validation {

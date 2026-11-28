@@ -49,6 +49,10 @@ locals {
 # Public because the org is on GitHub Free, where a private repository cannot
 # have rulesets. Dependabot alerts come from the org's enforced code security
 # configuration, which the provider cannot override per repository.
+#
+# GitHub auto-merge doesn't apply Renovate's ruleset bypass
+# (alunduil/alunduil-infrastructure#888), so without a merge queue it never
+# completes. Renovate merges its own pull requests instead.
 #trivy:ignore:GIT-0001
 #trivy:ignore:GIT-0003
 resource "github_repository" "this" {
@@ -66,7 +70,7 @@ resource "github_repository" "this" {
   allow_merge_commit          = contains(local.flow.merge_methods, "merge")
   allow_squash_merge          = local.squash_merges
   allow_rebase_merge          = false
-  allow_auto_merge            = var.renovate_automerge
+  allow_auto_merge            = local.develop_merge_queue
   allow_update_branch         = true
   squash_merge_commit_title   = local.squash_merges ? "PR_TITLE" : null
   squash_merge_commit_message = local.squash_merges ? "PR_BODY" : null
