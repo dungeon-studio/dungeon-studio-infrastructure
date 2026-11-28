@@ -42,6 +42,8 @@ locals {
 
   # Null rather than false, so an imported repository plans no change.
   terraform_created = var.terraform_created ? true : null
+
+  develop_merge_queue = try(var.required_status_checks.merge_queue, false)
 }
 
 # Public because the org is on GitHub Free, where a private repository cannot
@@ -268,7 +270,7 @@ locals {
         refs        = local.develop_refs
         checks      = local.required_checks
         strict      = coalesce(try(var.required_status_checks.strict, null), !var.renovate_automerge)
-        merge_queue = try(var.required_status_checks.merge_queue, false)
+        merge_queue = local.develop_merge_queue
       }
       # Release pull requests merge one at a time, so they need no queue.
       release = {
